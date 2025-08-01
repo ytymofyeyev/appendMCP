@@ -1,0 +1,499 @@
+---
+title: "Supplement for Interim Analysis and Multiple Testing Strategy in TEMPLATE Study"
+date: "`r Sys.Date()`"
+output:
+  bookdown::html_document2:
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+    number_sections: no
+    self_contained: yes
+    highlight: pygments
+    code_folding: hide
+    code_download: true
+  pdf_document:
+    toc: no
+    toc_depth: '3'
+    keep_tex: yes
+  html_document:
+    toc: no
+    toc_depth: 3
+    toc_float: yes
+    number_sections: no
+    self_contained: yes
+    highlight: pygments
+    code_folding: hide
+    code_download: true
+  word_document:
+    toc: no
+    toc_depth: '3'
+---
+
+```{r setup, include=FALSE}
+require(tidyverse)
+require(gsDesign)
+require(gMCPLite)
+require(gMCP)
+require(mvtnorm)
+require(kableExtra)
+require(knitr)
+# require(lubridate)
+
+knitr::opts_chunk$set(
+  collapse   = TRUE,
+  comment    = "#>",
+  fig.width  = 6.5,
+  fig.height = 4.5,
+  message    = FALSE,
+  warning    = FALSE
+)
+options(width = 58)
+
+source("./utils_MT_in_grSeq.R")
+```
+
+```{r input, fig.height=5, fig.width=5, fig.align="center"}
+######### << START INPUT >> ####################################################
+
+##### 1. Global parameters
+# Number of hypotheses included in the testing strategy with FWER control
+numHyp        <- 4
+# Allowed one-sided FWER
+alphaTotal    <- 0.025
+# Number of digits to report for p-value boundaries
+pdigits       <- 5
+# Number of rounding digits for information fractions
+idigits       <- 2
+# Data availability at IA in percent relative to max
+plotInPercent <- FALSE
+# Time limit in plot
+Tmax_atPlot   <- 60
+# Study specific parameter for multiple testing procedure
+mtParam       <- 0.4
+
+##### 2. Enrollment
+# (This is aux to define enrollment per hypothesis below, might need enrollment
+# per hypothesis for sub-population analysis)
+enrollmentAll <- tibble::tibble(stratum  = "All",
+                                duration = 250*2/25,
+                                rate     = 25)
+
+##### 3. Main input tibble
+# One row per hypothesis
+inputD        <- tibble::tibble(
+  # Hypothesis IDs
+  id            = paste0("H", 1:numHyp),
+  # Hypothesis tags, used in graph and output tables
+  tag           = c("PFS B+", "PFS", "ORR", "PRO"),
+  # The fields 'regimen', 'ep', and 'suffix' are pasted together into 'descr'
+  # field for the table defining hypotheses, 'tblInput'
+  regimen       = rep("DrugX" , each = numHyp),
+  ep            = c("PFS", "PFS", "ORR", "PRO"),
+  suffix        = c("BM+", "all", "all", "all"), # E.g., for subgroups
+  # Type of hypothesis (primary or secondary)
+  type          = c("primary", "primary", "secondary", "secondary"),
+  # initial weights in graphical multiple testing procedure
+  w             = c(1, 0, 0, 0),
+  # Spending functions; use NULL if no group sequential test for Hi
+  grSeqTesting  = list(
+    H1 = list(sfu = gsDesign::sfPower, sfupar = 2),
+    H2 = list(sfu = sfPower, sfupar = 2, nominal = 0.0001), 
+    H3 = NULL,
+    H4 = NULL
+  ),
+  # 'iaSpec' and 'hypN' are uses to derive the information fractions, 'infoFr',
+  # and timing,'iaTiming' (calendar time since study start), for the analyses
+  # For each hypothesis, set criteria that trigger analyses through
+  # list(A1_list, A2_list, ..., Aj_list), where
+  # Aj_list = list(H = 1, atIF = 0.5) means that for that hypothesis analysis
+  # j takes place when H1 is at 0.5 information fraction
+  iaSpec        = list(
+    list(A1 = list(H = 2, atIF = 0.70), A2 = list(H = 2, atIF = 1)),
+    list(A1 = list(H = 2, atIF = 0.70),
+         A2 = list(H = 2, atIF = 0.85),
+         A3 = list(H = 2, atIF = 1)),
+    list(A1 = list(H = 2, atIF = 1)),
+    list(A1 = list(H = 2, atIF = 1))
+  ),
+  # Set total information, N, for a given hypothesis (sample size or events);
+  # leave NA if 'enrollment' and 'iaSpec' would define N
+  hypN          = c(NA, 350, NA, NA),
+  # In some cases, would need to define 'infoFr' and 'iaTime' explicitly
+  # infoFr        = list(),
+  # Calendar time of analysis
+  # iaTime        =  list(),
+  # To define hypothesis test statistics Zi ~ N(., 1), use 'endpointParam'
+  # Class of 'endpointParam' is used to derive effect delta and standardized
+  # effect. Standardized effect size is used for power calculations. Several
+  # options are available to set test for binary endpoints.
+  endpointParam = list(
+    structure(
+      list(
+        p1            = 0.60*log(2)/10,
+        p2            = log(2)/10,
+        dropoutHazard = -log(1 - 0.05)/12
+      ),
+      class = "tte_exp"
+    ),
+    structure(
+      list(
+        p1            = 0.70*log(2)/15,
+        p2            = log(2)/15,
+        dropoutHazard = -log(1 - 0.05)/12
+      ),
+      class = "tte_exp"
+    ),
+    structure(
+      list(
+        p1            = 0.85,
+        p2            = 0.70,
+        maturityTime  = 6
+        ),
+      class = "binomial_pooled"),
+    structure(
+      list(
+        p1            = 0.45,
+        p2            = 0.10,
+        maturityTime  = 3
+        ),
+      class = "normal")
+  ),
+  # Allocation ratio; trt/control
+  allocRatio    = 1,
+  # Prevalence of the hypotheses
+  prevalence    = c(0.66, 1, 1, 1),
+  # Compute enrollment to each hypothesis using its prevalence and the
+  # previously set enrollment information
+  enrollment    = lapply(prevalence, function(a) {
+    purrr::modify_at(enrollmentAll, "rate", ~{a*.x})
+  })
+)
+
+##### 4. Define graphical testing procedure
+graphProc     <- function(s, hypNames = NULL) {
+  # s - split parameter
+  m             <- matrix(0, numHyp, numHyp)
+  m[1, 2]       <-  1
+  m[2, 3]       <- 1 - s
+  m[2, 4]       <- s
+  m[3, 4]       <- 1
+  m[4, 3]       <- 1
+  if (!is.null(hypNames)) {
+    colnames(m) <- rownames(m) <- hypNames
+  }
+  new("graphMCP", m = m, weights = inputD$w)
+}
+G             <- graphProc(mtParam,
+                           hypNames = paste(inputD$id, inputD$tag, sep = ": "))
+
+##### 5. Depict the graphical testing procedure (refer to ?gMCPLite::hGraph)
+graphFigure   <- gMCPLite::hGraph(
+  nHypotheses     = numHyp,
+  nameHypotheses  = paste(inputD$id, inputD$tag, sep = ": "),
+  legend.name     = "Color scheme",
+  #labels          = c("Regimen1", "Regimen2"),
+  #legend.position = c(.5, 0.2),
+  #fill            = rep(1:2, each = numHyp/2),
+  #palette         = c("cyan4", "lightblue"),
+  halfWid         = 0.4,
+  halfHgt         = 0.2,
+  trhw            = 0.15,
+  trhh            = 0.05,
+  offset          = 0.2,
+  size            = 4,
+  boxtextsize     = 3.5,
+  trdigits        = 3,
+  # relative position of plots on MT graph
+  x               = c(1, 3, 2, 4),
+  y               = c(0, 0, -1, -1),
+  alphaHypotheses = gMCP::getWeights(G),
+  m               = gMCP::getMatrix(G),
+  wchar           = "w"
+)
+
+######### << END INPUT >> ######################################################
+```
+
+```{r processInput, include=TRUE, echo=FALSE, message=FALSE}
+checkInput(inputD, G)    # check the inputs TODO
+main_objects <- exec_calc(inputD)
+D           <- main_objects$D
+#D$grSeqTestingCh[c(3, 6)] <- paste("IA1: Nominal spend, IA2-5:",
+#                                   D$grSeqTestingCh[3])
+ia_details  <- main_objects$ia_details
+hyp_testing <- main_objects$hyp_testing_dataset
+#hyp_testing <- dplyr::mutate(hyp_testing,
+#                             sfInfo = case_when(sfInfo == "Kim-DeMets (power), parameter = 2" ~ paste("IA1: Nominal spend, IA2-5:",
+#                                                                                                      sfInfo),
+#                                                .default = sfInfo))
+
+```
+## Introduction 
+
+With a `r enrollmentAll |> pull(duration) |> sum() |> round(digits = 1)`-month accrual period, 
+the total sample size planned for the study is `r enrollmentAll |> mutate(x= duration*rate) |> pull(x) |> sum() |>round(digits = 0)`.
+
+## Multiplicity Adjustment
+
+The multiplicity strategy follows the graphical approach for group sequential designs of Maurer and Bretz (2013) 
+which provides strong control of type 1 error.
+The procedure takes into account both sources of multiplicity: 
+multiple hypothesis tests (e.g., across primary and secondary endpoints) and 
+multiple analyses planned for the study (i.e., interim and final analyses).
+
+There are two key components that define this approach  
+
+* Testing algorithm for multiple hypotheses specified by the graphical representation 
+* Repeated testing of some hypotheses using the alpha-spending function methodology
+
+The multiplicity strategy will be applied to the 
+`r sum(D$type == "primary")`  primary superiority hypotheses 
+( 
+`r D %>% filter(type=="primary") %>% dplyr::select(tag) %>% unlist() %>% combine_words()`
+)
+and `r sum(D$type == "secondary")` key secondary superiority hypotheses
+(
+`r  D %>% filter(type=="secondary") %>% dplyr::select(tag) %>% unlist() %>%combine_words()`
+). 
+Table \@ref(tab:inputTable) summarizes the hypotheses specifying alpha-spending functions
+(for hypotheses to be tested group sequentially) together with the
+effect sizes and planned maximum statistical information 
+(sample size or number of events). 
+
+```{r inputTable, include=TRUE, echo=FALSE, results='markup'}
+tblInput <- D %>%
+    dplyr::select(id, tag, type, w, grSeqTestingCh, deltaStr, hypN) %>%
+    dplyr::rename(
+        'Label'                    = id,
+        'Description'              = tag,
+        'Type'                     = type,
+        'Initial weight'           = w,
+        'Group Sequential Testing' = grSeqTestingCh,
+        'Effect size'              = deltaStr,
+        'n' = hypN
+    )
+# adding footnote information
+names(tblInput)[6] <-
+    paste0(names(tblInput)[6], footnote_marker_symbol (1))
+names(tblInput)[7] <-
+    paste0(names(tblInput)[7], footnote_marker_symbol (2))
+
+if (is_html_output()) {
+    tblInput  %>%
+        kable("html", escape = F, align=rep("l",5), caption = "Summary of Primary and Key Secondary Hypotheses") %>%
+        kable_styling() %>% 
+        footnote(symbol = 
+                     c(
+                         "Mean difference for binary and continouos endpoints or hazard ratio (HR) for TTE endpoints",
+                         "Sample size or number of events for TTE endpoints"
+                     )
+        )
+} else if (is_latex_output()) {
+    tblInput %>% 
+        mutate_all(linebreak) %>%  
+        kable("latex", booktabs = T, escape = F, longtable = TRUE, 
+              caption = "Summary of Primary and Key Secondary Hypotheses") %>%
+        kable_styling(latex_options = c("hold_position", "repeat_header"))
+    #%>% 
+    # pack_rows(index = table(fct_inorder(df$hypNames)))
+} else if (knitr::pandoc_to("docx")){
+    require(flextable)
+    df <- data.frame(lapply(tblInput, function(x) {gsub("<br>", "\n", x)}), stringsAsFactors = F)
+    flextable(df)
+}
+
+```
+
+Figure \@ref(fig:timelinePlot) provides details as for statistical information projected to be
+available (in percentage relative to maximum) versus time since the trial start by the endpoint types. The vertical lines 
+on the figure mark times on the interim analyses.
+
+The overall type I family-wise error rate for `r numHyp` hypotheses, over all (interim and final) analyses,
+is controlled to `r alphaTotal*100`% (one-sided). 
+
+Figure \@ref(fig:MTgraph) shows the graph where the hypotheses of interest are represented by the elliptical nodes. 
+Each node has the hypothesis weight assigned to it (denoted by $w$). A particular value of $w$
+sets the local significance level associated with that hypothesis
+(which is equal to `r alphaTotal`$w$).
+The graphical approach allows local significance levels to be recycled (along arrows on the graph) when
+a given hypothesis is successful (i.e., the corresponding null hypothesis is rejected) at interim or final analyses.
+Each arrow specifies the fraction of $w$ (by the number attached to it) to be transferred from the source node 
+to the destination node.
+This "alpha-propagation" results in a corresponding increase of
+the local significance level of the destination node.
+Figure \@ref(fig:MTgraph) defines the initial configuration of the local significance levels and the directed edges (arrows).
+Particularly, the initial weight assignment for `r combine_words(D$descr[D$w>0])` is set to 
+`r combine_words(D$w[D$w>0])`, respectively.
+
+```{r MTgraph, fig.cap="Graph Depicting Multiple Hypothesis Testing Strategy.", echo=FALSE, fig.align="center",fig.height=4, fig.width=6}
+graphFigure
+
+```
+
+The testing algorithm codes a series of graph transformations which happens at each successful
+clearing of a hypothesis as described in Maurer and Bretz (2013). 
+During an execution of the procedure, different scenarios as for local significance levels emerge in an iterative manner. 
+
+## Interim Analyses {.tabset}
+
+### IA by Hypothesis
+
+Table \@ref(tab:iaDetailsTableA) and \@ref(tab:iaDetailsTableB) summarize the the planned interim analyses.
+
+```{r iaDetailsTableA, include=TRUE, echo=FALSE, results='markup'}
+tblAnalysesA <- ia_details                                    %>% 
+    dplyr::select(id_tag, ia, criterion, iaTime, n.I, infoFr) %>% 
+    dplyr::rename(
+        "Hypothesis Analysis"    = ia,
+        "Criteria for Conduct"   = criterion,
+        "Targeted Analysis Time" = iaTime,
+        "n"                      = n.I,
+        "Information Fraction"   = infoFr
+    )
+names(tblAnalysesA)[5] <- paste0(names(tblAnalysesA)[5], footnote_marker_symbol (2))
+
+if (is_html_output()) {
+    tblAnalysesA[,-1] %>%
+        dplyr::mutate(across(where(is.numeric), ~round(.x,2))) %>%
+        kable("html", escape = F, caption = "Summary of Interim Analyses (by hypotheses)") %>%
+        kable_styling(position = "center", full_width = FALSE) %>%
+        pack_rows( index=table(fct_inorder(tblAnalysesA$id_tag))) %>%
+        footnote(symbol = 
+                     c(
+                         "Sample size or number of evetns for TTE endpoints"
+                     )
+        )
+} else if (is_latex_output()) {
+} else if (knitr::pandoc_to("docx")){
+    require(flextable)
+}
+```															 
+
+### IA by Calendar Time
+
+```{r iaDetailsTableB, include=TRUE, echo=FALSE, results='markup'}
+
+tblAnalysesB <- ia_details                                       %>% 
+    dplyr::arrange(ia_ind, id_tag)                               %>%
+    dplyr::select(ia_ind, id_tag, criterion, iaTime, n.I, infoFr)        %>% 
+    dplyr::mutate(
+        ia_ind = paste0("Data cut-off #",ia_ind)
+        # n_str  = paste0(n.I," (", round(infoFr,idigits)*100, "%)")
+    ) %>%
+    dplyr::rename(
+        "Analysis"               = ia_ind,
+        "Hypothesis"             = id_tag, 
+        "Criteria for Conduct"   = criterion,
+        "Targeted Analysis Time" = iaTime,
+        "n"                      = n.I, 
+        "Information Fraction"   = infoFr
+    )
+
+names(tblAnalysesB)[5] <- paste0(names(tblAnalysesB)[5], footnote_marker_symbol (2))
+
+if (is_html_output()) {
+    groupingVec <- tblAnalysesB %>% 
+        dplyr::mutate(across(where(is.numeric), ~round(.x,1))) %>%
+        dplyr::mutate(
+            `Targeted Analysis Time` = paste0("time = ",`Targeted Analysis Time`),
+            `Criteria for Conduct`   = paste0("Criteria: ",`Criteria for Conduct`)
+        ) %>%
+        dplyr::select(`Analysis`,`Targeted Analysis Time`, `Criteria for Conduct`) %>% 
+        tidyr::unite(col = calAnalysis, sep=", ")
+    
+    tblAnalysesB[,c(2,5,6)] %>%
+        kable("html", escape = F, caption = "Summary of Interim Analyses (by calendar analysis)",align = c('lrr')) %>%
+        kable_styling(position = "center", full_width = FALSE) %>%
+        pack_rows( index = table(groupingVec))%>%
+        footnote(symbol = 
+                     c(
+                         "Sample size or number of evetns for TTE endpoints"
+                     )
+        )
+} else if (is_latex_output()) {
+} else if (knitr::pandoc_to("docx")){
+    require(flextable)
+}
+
+```															 
+
+### Enrollment and Data Availability Plot
+
+```{r timelinePlot, fig.cap="Timelines.", echo=FALSE, fig.align="center",fig.height=6, fig.width=9}
+dataAvailPlot <- plot_iaTiming( D %>% distinct(endpointParam, .keep_all = TRUE), 
+                                enrollment = enrollmentAll, Tmax=Tmax_atPlot, plotInPercent = plotInPercent)
+plot(dataAvailPlot)
+```
+
+## Hypothesis Testing {.tabset} 
+
+### Scenarios 
+For each hypothesis, Table \@ref(tab:graphTable) gives all possible scenarios for the local
+significance levels in the first column, the corresponding $w$ in the second column, and listing of scenarios as for
+what hypothesis testing needs to be successful in the third column. 
+
+```{r graphTable, include=TRUE, echo=FALSE, results='markup'}
+
+knit_MT_table(hyp_testing, digits=5)
+```
+
+### Bounderies and Power 
+Table \@ref(tab:grSeqTable) details the procedure regarding the hypothesis testing at the interim and final analyses. 
+If for a given hypothesis group sequential testing is planned, the table provides the nominal p-value boundary derived from the given alpha-spending 
+function and the information fractions. This boundary will be compared to the observed p-values calculated for the test statistics at the corresponding 
+analyses. The timing of analyses is expressed in terms of statistical information fractions, 
+i.e., current analysis information relative to the total plan information for that hypothesis test.
+Also, the table reports power (cumulatively over analyses) assuming 
+hypotheses' effect sizes from Table \@ref(tab:inputTable).
+
+```{r grSeqTable, include=TRUE, echo=FALSE, results='markup'}
+knit_MT_grSeq_table(hyp_testing, digits=5)
+```
+
+### Spending Functions
+
+Figure \@ref(fig:plotSF) visualizes alpha-spending functions profiled by local significance 
+levels available for hypotheses describing all potential scenarios needed during an execution of the 
+multiple testing procedure.
+
+```{r plotSF, eval=TRUE, fig.cap="Alpha-spending functions", echo=FALSE, fig.height=11, fig.width=10}
+
+unSF <- unique( dplyr::select(hyp_testing, hypNames, alpha,timing,spend, sfInfo)) %>% drop_na(spend) 
+sfDat <- pmap_dfr(unSF, function(hypNames, alpha, timing, spend, sfInfo) {
+  data.frame(
+        Hypothesis        = hypNames,
+        alpha             = alpha,
+        t                 = timing,
+        spend             = spend,
+        Spending_function = sfInfo,
+        alpha_level       = factor(round(alpha, 5))
+    )    
+})
+
+ggplot(sfDat,
+       aes(
+         x        = t,
+         y        = spend,
+         linetype = Spending_function,
+         colour   = alpha_level
+       )) +
+  facet_wrap( ~ Hypothesis, ncol = 1) +
+  geom_line() +
+  geom_point() +
+  labs(x = "Informatin fraction", y = "Cumulative alpha") +
+  theme(
+    plot.title       = element_text(hjust = 0),
+    legend.position  = "bottom",
+    legend.direction = "vertical",
+    legend.text      = element_text (size = 12),
+    legend.title     = element_text(size = 12),
+    axis.text        = element_text(size = 12),
+    axis.text.x      = element_text(hjust = 1),
+    # angle          =45
+    axis.title       = element_text(size = 14),
+    strip.text.x     = element_text(size = 12)
+  )
+```
+
+## References 
+Maurer W, Bretz F. Multiple testing in group sequential trials using graphical approaches. Statistics in Biopharmaceutical Research. 2013;5(4):311-320.

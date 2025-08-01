@@ -1,0 +1,4 @@
+name: MCP in GSD
+description: >
+ Template for creating an supplement for interim analysis and multiple testing strategy
+create_dir: true
