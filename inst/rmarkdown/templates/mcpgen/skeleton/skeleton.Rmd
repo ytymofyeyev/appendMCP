@@ -30,13 +30,14 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-require(tidyverse)
-require(gsDesign)
-require(gMCPLite)
-require(gMCP)
-require(mvtnorm)
-require(kableExtra)
-require(knitr)
+library(appendMCP)
+library(tidyverse)
+library(gsDesign)
+library(gMCPLite)
+library(gMCP)
+library(mvtnorm)
+library(kableExtra)
+library(knitr)
 # require(lubridate)
 
 knitr::opts_chunk$set(
@@ -48,8 +49,6 @@ knitr::opts_chunk$set(
   warning    = FALSE
 )
 options(width = 58)
-
-source("./utils_MT_in_grSeq.R")
 ```
 
 ```{r input, fig.height=5, fig.width=5, fig.align="center"}
@@ -217,16 +216,9 @@ graphFigure   <- gMCPLite::hGraph(
 ```{r processInput, include=TRUE, echo=FALSE, message=FALSE}
 checkInput(inputD, G)    # check the inputs TODO
 main_objects <- exec_calc(inputD)
-D           <- main_objects$D
-#D$grSeqTestingCh[c(3, 6)] <- paste("IA1: Nominal spend, IA2-5:",
-#                                   D$grSeqTestingCh[3])
-ia_details  <- main_objects$ia_details
-hyp_testing <- main_objects$hyp_testing_dataset
-#hyp_testing <- dplyr::mutate(hyp_testing,
-#                             sfInfo = case_when(sfInfo == "Kim-DeMets (power), parameter = 2" ~ paste("IA1: Nominal spend, IA2-5:",
-#                                                                                                      sfInfo),
-#                                                .default = sfInfo))
-
+D            <- main_objects$D
+ia_details   <- main_objects$ia_details
+hyp_testing  <- main_objects$hyp_testing_dataset
 ```
 ## Introduction 
 

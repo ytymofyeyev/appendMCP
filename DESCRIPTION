@@ -1,11 +1,11 @@
 Package: appendMCP
 Type: Package
-Title: Tools for defining graphical multiple testing procedures in group sequential designs.
+Title: Tools for defining graphical multiple testing procedures in group sequential designs
 Version: 0.1.0
 Authors@R: c(
     person(
-      "Jane", "Doe",
-      email = "jane@example.com",
+      "Tymofyeyev", "Yevgen",
+      email = "ytymofye@its.jnj.com",
       role = c("aut", "cre")
     )
   )
@@ -19,6 +19,7 @@ Imports:
     dplyr,
     flextable,
     ggplot2,
+    gMCP,
     gsDesign,
     knitr,
     lubridate,

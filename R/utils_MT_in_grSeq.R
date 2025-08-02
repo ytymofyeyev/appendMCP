@@ -6,6 +6,11 @@
 
 #' @importFrom rlang .data
 
+utils::globalVariables(c("numHyp", "alphaTotal",
+                         "pdigits", "idigits", "plotInPercent", "Tmax_atPlot",
+                         "mtParam", "enrollmentAll",
+                         "inputD", "G"))
+
 # operations with IA timing and IF ----
 
 # derive analysis time since start using input dataset 'D' and 'enrollment'
@@ -81,9 +86,16 @@ deriveIF <- function(D, enrollment, digits = 2) {
   return(IFs)
 }
 
-# extract delta (hypothesis parameter on the natural scale) ----
+#' Get a parameter under H1 on a natural scale
+#'
+#' @param x A endpoint object
+#'
+#' @returns A value of parameter on a natural scale under H1
 #' @export
-getDelta <- function (x) {
+#'
+#' @examples
+#' getDelta( x = structure(list(p1 = 0.04, p2=0.03, dropoutrate = 0.001), class="tte_exp"))
+getDelta <- function(x){
   UseMethod("getDelta", x)
 }
 
@@ -97,15 +109,23 @@ getDelta.tte_exp <- function(x) {
 }
 
 # extract effect size info (hypothesis parameter on the natural scale) ----
+
+#' Format a string reporting effect
+#'
+#' @param x An endpoint object
+#'
+#' @returns A character vector
 #' @export
+#'
+#' @examples
+#' getEffectSizeDetails( x = structure(list(p1 = 0.40, p2 = 0), class = "normal"))
 getEffectSizeDetails <- function (x) {
   UseMethod("getEffectSizeDetails", x)
 }
 
 #' @export
 getEffectSizeDetails.normal <- function(x) {
-  fmtStr <- sprintf("%%.%df", digits)
-  sprintf(fmtStr, round(x$p1 - x$p2))
+  sprintf("%2.f", x$p1 - x$p2)
 }
 
 #' @export
@@ -140,7 +160,17 @@ getEffectSizeDetails.tte_exp <- function(x) {
 # compute standardization factor, psi,  that link natural parameter to the effect size, theta
 # that non-centrality parameter is in the form theta*sqrt(n)= psi*delta*sgrt(n)
 # e.g, for log-rank test, psi = sqrt(c*(1-c)), where c=1/(1+ratio), ratio is the allocation ratio
+
+#' Compute standardization factor, psi,  that link natural parameter to the effect size, theta
+#'
+#' @param x An endpoint object
+#' @param ratio Allocation ratio
+#'
+#' @returns A value of standardization factor
 #' @export
+#'
+#' @examples
+#' getStandardizingCoef(list(list(),class="tte_exp"),ratio=1)
 getStandardizingCoef <- function (x, ratio=1) {
   UseMethod("getStandardizingCoef", x )
 }
@@ -158,8 +188,8 @@ getStandardizingCoef.binomial <- function(x, ratio = 1){
     x$alpha <- 0.025
     x$beta  <- 0.85
   }
-  nAux <- nBinomial( p1=x$p1, p2=x$p2, ratio=ratio,alpha=x$alpha, beta=x$beta)
-  thetaAux <- (qnorm(1-x$alpha) + qnorm(1-x$beta))/sqrt(nAux)
+  nAux <- gsDesign::nBinomial( p1=x$p1, p2=x$p2, ratio=ratio,alpha=x$alpha, beta=x$beta)
+  thetaAux <- (stats::qnorm(1-x$alpha) + stats::qnorm(1-x$beta))/sqrt(nAux)
   return(thetaAux/(x$p1-x$p2))
 }
 
@@ -358,6 +388,20 @@ Time2n.tte_exp <- function(x, T, enrollment, ratio = 1) {
 
 # utils functions ----
 
+#' Enrollment and Data Availability Plot
+#'
+#' @param D A dataset containing interim analysis information
+#' @param enrollment An enrollment object
+#' @param Tmax A scalar defining the maximum time on the x-axis
+#' @param plotInPercent logical; if TRUE the y-axis reports in percentages
+#'
+#' @returns A ggplot object representing data availability for each hypothesis
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' plot_iaTiming(D,enrollment)
+#' }
 plot_iaTiming <-
   function(D,
            enrollment,
@@ -407,13 +451,13 @@ plot_iaTiming <-
     # names(Y) <- paste0( D$ep, " (",D$id,")", maturity) # to be a plot legend
     names(Y) <-
       paste0(D$id, ": ", D$tag, " ", maturity) # to be a plot legend
-    dat <- tibble(
+    dat <- tibble::tibble(
       Time = timeGrid,
       Randomized,
       as.data.frame(Y, check.names = FALSE),
       .name_repair = "minimal"
     ) %>%
-      pivot_longer(!Time, names_to = "Type", values_to = "Y") %>%
+      tidyr::pivot_longer(!Time, names_to = "Type", values_to = "Y") %>%
       mutate(Type = factor(Type, levels = c(
         "Randomized",
         setdiff(unique(Type), "Randomized")
@@ -506,19 +550,19 @@ getPossibleWeightsInfo <- function(G, # G is gMCP graph object
     paste(aux, collapse = " or ", sep = "_")
   }  # formRejStr
 
-  K <- length(getNodes(G)) # number of hypotheses in G
-  W <- generateWeights(G)
+  K <- length(gMCP::getNodes(G)) # number of hypotheses in G
+  W <- gMCP::generateWeights(G)
   # For each Hj generate possible weights and info of rejection scenarios that lead to that weight
   res <-
     tibble::tibble(Hint = apply(W[, 1:K], 1, c, simplify = FALSE),
                    as.data.frame(W[,-c(1:K)])) %>%
     mutate(# number of elementary hyp in 'Hint'
       mj = purrr::map_dbl(Hint, sum)) %>%
-    pivot_longer(-c(Hint, mj), names_to = "Hj", values_to = "possibleWeight") %>%
+    tidyr::pivot_longer(-c(Hint, mj), names_to = "Hj", values_to = "possibleWeight") %>%
     mutate(possibleWeight = round(possibleWeight, numDigitsToRound)) %>%
     # dplyr::filter(possibleWeight>0) %>%  ## ?? YT Sep. 2023
     group_by(Hj, possibleWeight) %>%
-    reframe(max_mj = max(mj),
+    dplyr::reframe(max_mj = max(mj),
             mj = mj,
             Hint = Hint) %>%
     group_by(Hj, possibleWeight) %>%
@@ -606,15 +650,15 @@ report_MT_grSeq <- function(
     if (args$k == 1) {
       # if a single analysis spend all alpha at once
       return(list(upper = list(
-        bound = qnorm(args$alpha, lower.tail = FALSE)
+        bound = stats::qnorm(args$alpha, lower.tail = FALSE)
       )))
     } else{
       sf_name <- try(get_sf_name(args$sfu), silent = TRUE)
       if (sf_name == "Bonferroni adjustment")
         return(list(upper = list(
-          bound = qnorm(args$alpha * diff(c(0,args$sfupar)),lower.tail = FALSE)
+          bound = stats::qnorm(args$alpha * diff(c(0,args$sfupar)),lower.tail = FALSE)
         )))
-      return(do.call(gsDesign, args))
+      return(do.call(gsDesign::gsDesign, args))
     }
   }
   gsDesignArgs <-
@@ -623,7 +667,7 @@ report_MT_grSeq <- function(
   # extract nominal p-values
   nominalPval <-
     lapply(gsDesignList, function(x)
-      pnorm(x$upper$bound, lower.tail = FALSE))
+      stats::pnorm(x$upper$bound, lower.tail = FALSE))
 
   res <-
     paramData %>% add_column(nominalPval) %>% left_join(scenarioInfo)
@@ -681,7 +725,7 @@ report_MT_grSeq <- function(
 
     gsProbabilityArgs <-
       aux %>%  dplyr::select(k, theta, n.I, a, b)
-    gsProbabilityList <- purrr::pmap(gsProbabilityArgs, gsProbability)
+    gsProbabilityList <- purrr::pmap(gsProbabilityArgs, gsDesign::gsProbability)
     pow <-
       lapply(gsProbabilityList, function(x)
         cumsum(x$upper$prob))
@@ -702,6 +746,18 @@ report_MT_grSeq <- function(
 
 # knit functions for tables ----
 
+#' Possible scenarios for a local significance level
+#'
+#' @param hyp_testing_dataset A dataset defining testing hypotheses
+#' @param digits A scalar defining the number of digits to report in a table
+#'
+#' @returns A table that reports all possible scenarios for the local significance level
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' knit_MT_table(hyp_testing_dataset)
+#' }
 knit_MT_table <- function(hyp_testing_dataset, digits = 5) {
   df <- hyp_testing_dataset %>%
     dplyr::select(hypNames, alpha, possibleWeight, rejectedHypInfo) %>%
@@ -749,6 +805,20 @@ knit_MT_table <- function(hyp_testing_dataset, digits = 5) {
 }
 
 # prepare table that report scenarios as for cut-off nominal p-vals for all Hi at all analyses
+
+#' Nominal p-value boundary
+#'
+#' @param hyp_testing_dataset A dataset defining testing hypotheses
+#' @param digits A scalar defining the number of digits to report in a table
+#' @param include_nominalPvalx2 logical; if TRUE a column with 2-sided p-values is reported
+#'
+#' @returns A table reporting boundaries to compare with observed p-values calculated for the test statistics at the corresponding analyses
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' knit_MT_grSeq_table(hyp_testing_dataset)
+#' }
 knit_MT_grSeq_table <- function(hyp_testing_dataset, digits = 5, include_nominalPvalx2 = TRUE) {
   df <- hyp_testing_dataset %>%
     dplyr::select(hypNames, alpha,
@@ -877,7 +947,7 @@ sfRecycle <- function (alpha, t, param)
     do.call(sfInit,
             list(alpha = initSigLevel, t = tStar, param = sfInitParam))$spend
   gammaStar <-
-    uniroot(getGammaStar, c(.Machine$double.eps, 1e16))$root
+    stats::uniroot(getGammaStar, c(.Machine$double.eps, 1e16))$root
   # gammaStar <- (newSigLevel - alpha1) / (1-log(1+(exp(1)-1)*tStar))
   x$spend <- ifelse(
     t >= tStar,
@@ -900,17 +970,17 @@ sfRecycle <- function (alpha, t, param)
 
 sfSuperPower <- function (alpha, t, param)
 {
-  checkScalar(alpha, "numeric", c(0, Inf), c(FALSE, FALSE))
+  gsDesign::checkScalar(alpha, "numeric", c(0, Inf), c(FALSE, FALSE))
   par <-  param[1] - param[2] * alpha
-  checkScalar(par, "numeric", c(0, 15), c(FALSE, TRUE))
-  checkVector(t, "numeric", c(0, Inf), c(TRUE, FALSE))
+  gsDesign::checkScalar(par, "numeric", c(0, 15), c(FALSE, TRUE))
+  gsDesign::checkVector(t, "numeric", c(0, Inf), c(TRUE, FALSE))
   t[t > 1] <- 1
   x <-
     list(
       name    = "Augmented Power",
       param   = param,
       parname = c("A", "B"),
-      sf      = sfPower,
+      sf      = gsDesign::sfPower,
       spend   = alpha * t ^ par,
       bound   = NULL,
       prob    = NULL
@@ -926,8 +996,8 @@ sfBonferroni <- function (alpha, t, param)
             sf    = sfBonferroni,
             spend = NULL, bound = NULL, prob = NULL)
   class(x) <- "spendfn"
-  checkScalar(alpha, "numeric", c(0, Inf), c(FALSE, FALSE))
-  checkVector(t, "numeric", c(0, Inf), c(TRUE, FALSE))
+  gsDesign::checkScalar(alpha, "numeric", c(0, Inf), c(FALSE, FALSE))
+  gsDesign::checkVector(t, "numeric", c(0, Inf), c(TRUE, FALSE))
   t[t > 1] <- 1
   k <- length(t)
   j <- length(param)
@@ -1114,6 +1184,19 @@ timeline_gtable <- function(D, startDate = "2022-10-12", lpi = NULL) {
 
 # main functions ----
 
+#' Title
+#'
+#' @param inputD An input dataset
+#' @param G A graph object
+#' @param enrollment An enrollment object
+#'
+#' @returns A list of objects for output tables and plots
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' checkInput(inputD,G)
+#' }
 checkInput <- function(inputD, G, enrollment = NULL) {
   N_rand <- cumsum(c(0, enrollment$rate * c(enrollment$duration)))
   numHyp <- nrow(inputD)
@@ -1184,25 +1267,25 @@ exec_calc <- function(inputD) {
     match(c("regiment", "ep", "suffix"), names(D), nomatch = 0)
   if (!any(descr_fields))
     descr_fields <- match(c("tag"), names(D), nomatch = 0)
-  D$descr <- dplyr::select(D, descr_fields) %>% purrr::pmap_chr(.data$., paste)
+  D$descr <- dplyr::select(D, descr_fields) %>% purrr::pmap_chr(., paste)
   D <-
     tibble::add_column(D, grSeqTestingCh = sapply(D$grSeqTesting, print_sfInfo))
 
   ia_details <- D %>%
     dplyr::distinct(.data$id, .data$iaSpec, .keep_all = TRUE)     %>%
-    dplyr::mutate(id_tag = paste0(id, " (", tag, ")"))   %>%
+    dplyr::mutate(id_tag = paste0(.data$id, " (", .data$tag, ")"))   %>%
     dplyr::select("id_tag", "iaSpec", "iaTime", "n.I", "infoFr")        %>%
-    dplyr::mutate(iaSpec = purrr::map(iaSpec, function(x) {
+    dplyr::mutate(iaSpec = purrr::map(.data$iaSpec, function(x) {
       lapply(x, tibble::as_tibble)
     })) %>%
-    tidyr::unnest(c(iaSpec, iaTime, n.I, infoFr)) %>%
-    tidyr::unnest(iaSpec) %>%
-    dplyr::group_by(id_tag) %>%
+    tidyr::unnest(c(.data$iaSpec, .data$iaTime, .data$n.I, .data$infoFr)) %>%
+    tidyr::unnest(.data$iaSpec) %>%
+    dplyr::group_by(.data$id_tag) %>%
     dplyr::mutate(ia = dplyr::row_number(),
-                  criterion = paste0("H", H, " at information fraction ",
-                                     round(atIF, idigits))) %>%
+                  criterion = paste0("H", .data$H, " at information fraction ",
+                                     round(.data$atIF, idigits))) %>%
     dplyr::ungroup() %>%
-    dplyr::group_by(iaTime) %>%
+    dplyr::group_by(.data$iaTime) %>%
     dplyr::mutate(ia_ind = dplyr::cur_group_id()) %>%
     dplyr::ungroup()
 
