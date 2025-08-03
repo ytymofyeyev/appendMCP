@@ -595,7 +595,7 @@ report_MT_grSeq <- function(
 
   # possibleWeight <- apply(generateWeights(G)[,-c(1:m)],2,unique,simplify = FALSE)
   wInfo <- getPossibleWeightsInfo(G)
-  possibleWeight <- split(wInfo$possibleWeight, wInfo$Hj)
+  possibleWeight_aux <- split(wInfo$possibleWeight, wInfo$Hj)
   scenarioInfo   <-
     wInfo %>%
     dplyr::group_by(.data$Hj, .data$possibleWeight) %>%
@@ -619,31 +619,31 @@ report_MT_grSeq <- function(
   }
 
   paramData <- tibble::tibble(
-    hypNames = nodes,
-    test.type = 1,
-    k = sapply(D$infoFr, length),
-    timing = D$infoFr,
-    sfu    = sapply(D$grSeqTesting, function(x) x$sfu),
-    sfupar = sapply(D$grSeqTesting, function(x) x$sfupar),
-    nominal = sapply(D$grSeqTesting, \(x) x$nominal),
-    sfInfo = sapply(D$grSeqTesting, print_sfInfo),
-    possibleWeight
-  ) %>% tidyr::unnest(possibleWeight) %>%
+    hypNames        = nodes,
+    test.type       = 1,
+    k               = sapply(D$infoFr, length),
+    timing          = D$infoFr,
+    sfu             = sapply(D$grSeqTesting, function(x) x$sfu),
+    sfupar          = sapply(D$grSeqTesting, function(x) x$sfupar),
+    nominal         = sapply(D$grSeqTesting, \(x) x$nominal),
+    sfInfo          = sapply(D$grSeqTesting, print_sfInfo),
+    possibleWeight  = possibleWeight_aux
+  ) %>% tidyr::unnest(.data$possibleWeight) %>%
     dplyr::mutate(
-      alpha = .data$possibleWeight * .data$sigLevel,
+      alpha = .data$possibleWeight * sigLevel,
       weight_alpha = paste0(.data$possibleWeight, " (", .data$alpha, ")")
     ) %>%
     dplyr::filter(.data$alpha > 0) |>
     dplyr::mutate(sfupar = purrr::pmap(.l = list(.data$timing, .data$sfu, .data$sfupar, .data$nominal, .data$alpha),
                                        .f = get_sfupar),
-                  sfu    = purrr::map2(.data$sfu, .data$nominal, .data$get_sfu)) |>
+                  sfu    = purrr::map2(.data$sfu, .data$nominal, get_sfu)) |>
     dplyr::mutate(spend = purrr::pmap(.l = list(sfu = .data$sfu, sfupar = .data$sfupar,
                                                 timing = .data$timing, alpha = .data$alpha),
                                       .f = function(sfu, sfupar, timing, alpha) {
-                                        if (is.null(.data$sfu)) {
+                                        if (is.null(sfu)) {
                                           NULL
                                         } else {
-                                          .data$sfu(.data$alpha, .data$timing, .data$sfupar)$spend
+                                          sfu(alpha, timing, sfupar)$spend
                                         }
                                       }))
 
@@ -672,8 +672,8 @@ report_MT_grSeq <- function(
       stats::pnorm(x$upper$bound, lower.tail = FALSE))
 
   res <-
-    paramData %>% tibble::add_column(.data$nominalPval) %>%
-    dplyr::left_join(.data$scenarioInfo)
+    paramData %>% tibble::add_column(nominalPval) %>%
+    dplyr::left_join(scenarioInfo)
   res$Analysis <-
     sapply(res$k, function(x)
       paste(1:x, collapse = "<br>"))
@@ -685,7 +685,7 @@ report_MT_grSeq <- function(
   res$nominalPval   <-
     sapply(res$nominalPval, function(x)
       paste(round(x, digits = pdigits), collapse = "<br>"))
-  res$scenarioInfo <- dplyr::filter(scenarioInfo, possibleWeight > 0)
+  res$scenarioInfo <- dplyr::filter(scenarioInfo, .data$possibleWeight > 0)
   # run power evaluation if given effect size and sample size
   if (!is.null(D$theta) & !is.null(D$hypN)) {
     # extract nominal p-values
@@ -702,7 +702,7 @@ report_MT_grSeq <- function(
       b = lapply(gsDesignList, function(x)
         x$upper$bound)
     ) %>%
-      dplyr::left_join(dplyr::select("D", "hypNames", "theta", "hypN", "standFactor", "logDelta"))
+      dplyr::left_join(dplyr::select(D, "hypNames", "theta", "hypN", "standFactor", "logDelta"))
     aux$n.I <-
       mapply(FUN = "*", aux$timing, aux$hypN, SIMPLIFY = FALSE)
 
