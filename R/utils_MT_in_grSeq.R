@@ -315,7 +315,7 @@ n2Time.default <- function(x, n, enrollment, ratio = 1) {
   #     dplyr::mutate( totDuration = sum(duration))  %>% ungroup() %>%
   #     dplyr::select(totDuration) %>% max()
   accrualDuration <- sum(enrollment$duration)
-  uniroot(fun, c(0, accrualDuration + x$maturityTime))$root
+  stats::uniroot(fun, c(0, accrualDuration + x$maturityTime))$root
 }
 
 #' @export
@@ -414,7 +414,7 @@ plot_iaTiming <-
 
     timeGrid <- seq(0, Tmax, 1)
     Nmax <- sum(enrollment$rate * enrollment$duration)
-    N_Rand <- approx(
+    N_Rand <- stats::approx(
       x = c(0, cumsum(enrollment$duration)),
       y = c(0, cumsum(enrollment$rate * enrollment$duration)),
       xout = timeGrid,
@@ -457,10 +457,10 @@ plot_iaTiming <-
       as.data.frame(Y, check.names = FALSE),
       .name_repair = "minimal"
     ) %>%
-      tidyr::pivot_longer(!Time, names_to = "Type", values_to = "Y") %>%
-      mutate(Type = factor(Type, levels = c(
+      tidyr::pivot_longer(!.data$Time, names_to = "Type", values_to = "Y") %>%
+      dplyr::mutate(Type = factor(.data$Type, levels = c(
         "Randomized",
-        setdiff(unique(Type), "Randomized")
+        setdiff(unique(.data$Type), "Randomized")
       )))
 
     if (plotInPercent)
@@ -472,12 +472,14 @@ plot_iaTiming <-
              "Statistical Information")
     iaTimes <- unique(unlist(D$iaTime))
     ans <-
-      ggplot(data = dat, aes(x = Time, y = Y, col = Type)) + geom_line() +
-      geom_vline(xintercept = iaTimes, linetype = "dashed") +
-      labs(x = "Time, in months",
+      ggplot2::ggplot(data = dat, ggplot2::aes(x = .data$Time, y = .data$Y,
+                                               col = .data$Type)) +
+      ggplot2::geom_line() +
+      ggplot2::geom_vline(xintercept = iaTimes, linetype = "dashed") +
+      ggplot2::labs(x = "Time, in months",
            y = ylabStr) +
-      scale_x_continuous(breaks = seq(0, Tmax, 6), limits = c(0, Tmax)) +
-      annotate(
+      ggplot2::scale_x_continuous(breaks = seq(0, Tmax, 6), limits = c(0, Tmax)) +
+      ggplot2::annotate(
         "text",
         x = iaTimes,
         y = 0,
@@ -487,7 +489,7 @@ plot_iaTiming <-
         hjust = 0
       )
     if (plotInPercent)
-      ans <- ans + scale_y_continuous(breaks = seq(0, 100, 10))
+      ans <- ans + ggplot2::scale_y_continuous(breaks = seq(0, 100, 10))
 
     ans
   }
@@ -498,7 +500,7 @@ print_sfInfo <- function(x, digits = 4)
 {
   if (!is.null(x)) {
     if (is.character(x$sfu)) {
-      sfName <- case_match(
+      sfName <- dplyr::case_match(
         x$sfu,
         "OF" ~ "O'Brien - Fleming",
         "WT" ~ " Wang - Tsiatis",
@@ -556,22 +558,22 @@ getPossibleWeightsInfo <- function(G, # G is gMCP graph object
   res <-
     tibble::tibble(Hint = apply(W[, 1:K], 1, c, simplify = FALSE),
                    as.data.frame(W[,-c(1:K)])) %>%
-    mutate(# number of elementary hyp in 'Hint'
-      mj = purrr::map_dbl(Hint, sum)) %>%
-    tidyr::pivot_longer(-c(Hint, mj), names_to = "Hj", values_to = "possibleWeight") %>%
-    mutate(possibleWeight = round(possibleWeight, numDigitsToRound)) %>%
+    dplyr::mutate(# number of elementary hyp in 'Hint'
+      mj = purrr::map_dbl(.data$Hint, sum)) %>%
+    tidyr::pivot_longer(-c(.data$Hint, .data$mj), names_to = "Hj", values_to = "possibleWeight") %>%
+    dplyr::mutate(possibleWeight = round(.data$possibleWeight, numDigitsToRound)) %>%
     # dplyr::filter(possibleWeight>0) %>%  ## ?? YT Sep. 2023
-    group_by(Hj, possibleWeight) %>%
-    dplyr::reframe(max_mj = max(mj),
-            mj = mj,
-            Hint = Hint) %>%
-    group_by(Hj, possibleWeight) %>%
-    dplyr::filter(mj == max_mj) %>%
-    reframe(listHj = list(Hint)) %>%
-    group_by(Hj) %>%
-    mutate(rejectedHypInfo = purrr::map_chr(listHj, formRejStr)) %>%
-    dplyr::select(Hj, possibleWeight, rejectedHypInfo) %>%
-    mutate(Hj = as.numeric(gsub(".*?([0-9]+).*", "\\1", Hj)))
+    dplyr::group_by(.data$Hj, .data$possibleWeight) %>%
+    dplyr::reframe(max_mj = max(.data$mj),
+                       mj = .data$mj,
+                     Hint = .data$Hint) %>%
+    dplyr::group_by(.data$Hj, .data$possibleWeight) %>%
+    dplyr::filter(.data$mj == .data$max_mj) %>%
+    dplyr::reframe(listHj = list(.data$Hint)) %>%
+    dplyr::group_by(.data$Hj) %>%
+    dplyr::mutate(rejectedHypInfo = purrr::map_chr(.data$listHj, formRejStr)) %>%
+    dplyr::select("Hj", "possibleWeight", "rejectedHypInfo") %>%
+    dplyr::mutate(Hj = as.numeric(gsub(".*?([0-9]+).*", "\\1", .data$Hj)))
   return(res)
 }
 
@@ -588,7 +590,7 @@ report_MT_grSeq <- function(
     powdigits = 2      # power digits
 )
 {
-  nodes <- getNodes(G)
+  nodes <- gMCP::getNodes(G)
   m <- length(nodes)
 
   # possibleWeight <- apply(generateWeights(G)[,-c(1:m)],2,unique,simplify = FALSE)
@@ -596,9 +598,9 @@ report_MT_grSeq <- function(
   possibleWeight <- split(wInfo$possibleWeight, wInfo$Hj)
   scenarioInfo   <-
     wInfo %>%
-    group_by(Hj, possibleWeight) %>%
+    dplyr::group_by(.data$Hj, .data$possibleWeight) %>%
     #    summarise(wInfo = rejectedHypInfo) %>% ?? why I had this line
-    mutate(hypNames = nodes[Hj])
+    dplyr::mutate(hypNames = nodes[.data$Hj])
 
   get_sfu <- function(sfu, nominal) {
     if ( length(nominal) > 0) {
@@ -616,7 +618,7 @@ report_MT_grSeq <- function(
     }
   }
 
-  paramData <- tibble(
+  paramData <- tibble::tibble(
     hypNames = nodes,
     test.type = 1,
     k = sapply(D$infoFr, length),
@@ -626,22 +628,22 @@ report_MT_grSeq <- function(
     nominal = sapply(D$grSeqTesting, \(x) x$nominal),
     sfInfo = sapply(D$grSeqTesting, print_sfInfo),
     possibleWeight
-  ) %>% unnest(possibleWeight) %>%
-    mutate(
-      alpha = possibleWeight * sigLevel,
-      weight_alpha = paste0(possibleWeight, " (", alpha, ")")
+  ) %>% tidyr::unnest(possibleWeight) %>%
+    dplyr::mutate(
+      alpha = .data$possibleWeight * .data$sigLevel,
+      weight_alpha = paste0(.data$possibleWeight, " (", .data$alpha, ")")
     ) %>%
-    filter(alpha > 0) |>
-    dplyr::mutate(sfupar = purrr::pmap(.l = list(timing, sfu, sfupar, nominal, alpha),
+    dplyr::filter(.data$alpha > 0) |>
+    dplyr::mutate(sfupar = purrr::pmap(.l = list(.data$timing, .data$sfu, .data$sfupar, .data$nominal, .data$alpha),
                                        .f = get_sfupar),
-                  sfu    = purrr::map2(sfu, nominal, get_sfu)) |>
-    dplyr::mutate(spend = purrr::pmap(.l = list(sfu = sfu, sfupar = sfupar,
-                                                timing = timing, alpha = alpha),
+                  sfu    = purrr::map2(.data$sfu, .data$nominal, .data$get_sfu)) |>
+    dplyr::mutate(spend = purrr::pmap(.l = list(sfu = .data$sfu, sfupar = .data$sfupar,
+                                                timing = .data$timing, alpha = .data$alpha),
                                       .f = function(sfu, sfupar, timing, alpha) {
-                                        if (is.null(sfu)) {
+                                        if (is.null(.data$sfu)) {
                                           NULL
                                         } else {
-                                          sfu(alpha, timing, sfupar)$spend
+                                          .data$sfu(.data$alpha, .data$timing, .data$sfupar)$spend
                                         }
                                       }))
 
@@ -662,7 +664,7 @@ report_MT_grSeq <- function(
     }
   }
   gsDesignArgs <-
-    paramData %>% dplyr::select(alpha, test.type, k, timing, sfu, sfupar)
+    paramData %>% dplyr::select("alpha", "test.type", "k", "timing", "sfu", "sfupar")
   gsDesignList <- purrr::pmap(gsDesignArgs, gsDesign_m)
   # extract nominal p-values
   nominalPval <-
@@ -670,7 +672,8 @@ report_MT_grSeq <- function(
       stats::pnorm(x$upper$bound, lower.tail = FALSE))
 
   res <-
-    paramData %>% add_column(nominalPval) %>% left_join(scenarioInfo)
+    paramData %>% tibble::add_column(.data$nominalPval) %>%
+    dplyr::left_join(.data$scenarioInfo)
   res$Analysis <-
     sapply(res$k, function(x)
       paste(1:x, collapse = "<br>"))
@@ -682,7 +685,7 @@ report_MT_grSeq <- function(
   res$nominalPval   <-
     sapply(res$nominalPval, function(x)
       paste(round(x, digits = pdigits), collapse = "<br>"))
-  res$scenarioInfo <- filter(scenarioInfo, possibleWeight > 0)
+  res$scenarioInfo <- dplyr::filter(scenarioInfo, possibleWeight > 0)
   # run power evaluation if given effect size and sample size
   if (!is.null(D$theta) & !is.null(D$hypN)) {
     # extract nominal p-values
@@ -699,7 +702,7 @@ report_MT_grSeq <- function(
       b = lapply(gsDesignList, function(x)
         x$upper$bound)
     ) %>%
-      left_join(dplyr::select(D, hypNames, theta, hypN, standFactor, logDelta))
+      dplyr::left_join(dplyr::select("D", "hypNames", "theta", "hypN", "standFactor", "logDelta"))
     aux$n.I <-
       mapply(FUN = "*", aux$timing, aux$hypN, SIMPLIFY = FALSE)
 
@@ -724,24 +727,24 @@ report_MT_grSeq <- function(
     SIMPLIFY = FALSE)
 
     gsProbabilityArgs <-
-      aux %>%  dplyr::select(k, theta, n.I, a, b)
+      aux %>%  dplyr::select("k", "theta", "n.I", "a", "b")
     gsProbabilityList <- purrr::pmap(gsProbabilityArgs, gsDesign::gsProbability)
     pow <-
       lapply(gsProbabilityList, function(x)
         cumsum(x$upper$prob))
 
-    res <- res %>% add_column(deltaHat)
+    res <- res %>% tibble::add_column(deltaHat)
     res$deltaHat <-
       sapply(deltaHat, function(x)
         paste(round(x, digits = ddigits), collapse = "<br>"))
 
-    res <- res %>% add_column(pow)
+    res <- res %>% tibble::add_column(pow)
     res$pow <-
       sapply(res$pow, function(x)
         paste(round(x, digits = powdigits), collapse = "<br>"))
 
   }
-  res %>% dplyr::arrange(as.numeric(gsub(".*?([0-9]+).*", "\\1", hypNames)), alpha)
+  res %>% dplyr::arrange(as.numeric(gsub(".*?([0-9]+).*", "\\1", .data$hypNames)), .data$alpha)
 }
 
 # knit functions for tables ----
@@ -760,40 +763,40 @@ report_MT_grSeq <- function(
 #' }
 knit_MT_table <- function(hyp_testing_dataset, digits = 5) {
   df <- hyp_testing_dataset %>%
-    dplyr::select(hypNames, alpha, possibleWeight, rejectedHypInfo) %>%
+    dplyr::select("hypNames", "alpha", "possibleWeight", "rejectedHypInfo") %>%
     dplyr::rename(
-      'Local alpha level' = alpha,
-      'Weight' = possibleWeight,
-      'Testing Scenario' = rejectedHypInfo,
+      'Local alpha level' = .data$alpha,
+      'Weight'            = .data$possibleWeight,
+      'Testing Scenario'  = .data$rejectedHypInfo,
     )
 
-  if (is_html_output()) {
+  if (knitr::is_html_output()) {
     df[, -1] %>%
-      kable("html", escape  = F, digits  = digits,
+      knitr::kable("html", escape  = F, digits  = digits,
             caption = "List of possible local alpha levels following the graphical testing procedure") %>%
-      kable_styling() %>%
-      pack_rows( index         = table(fct_inorder(df$hypNames)),
+      kableExtra::kable_styling() %>%
+      kableExtra::pack_rows( index         = table(forcats::fct_inorder(df$hypNames)),
                  label_row_css = "text-align: left;"
       )
     # %>%
     # column_spec(1, latex_valign = "m")
     # collapse_rows(columns = 1, valign = "top")
-  } else if (is_latex_output()) {
+  } else if (knitr::is_latex_output()) {
     df <-
       data.frame(lapply(df, function(x) {
         gsub("<br>", "\n", x)
       }), stringsAsFactors = F)
     df[, -1] %>%
-      mutate_all(linebreak) %>%
-      kable(
+      dplyr::mutate_all(kableExtra::linebreak) %>%
+      knitr::kable(
         "latex",
         booktabs = T,
         escape = F,
         longtable = TRUE,
         caption = "Efficacy p-value Boundaries"
       ) %>%
-      kable_styling(latex_options = c("hold_position", "repeat_header")) %>%
-      pack_rows(index = table(fct_inorder(df$hypNames)))
+      kableExtra::kable_styling(latex_options = c("hold_position", "repeat_header")) %>%
+      kableExtra::pack_rows(index = table(forcats::fct_inorder(df$hypNames)))
   } else if (knitr::pandoc_to("docx")) {
     #require(flextable)
     df <-
@@ -821,48 +824,48 @@ knit_MT_table <- function(hyp_testing_dataset, digits = 5) {
 #' }
 knit_MT_grSeq_table <- function(hyp_testing_dataset, digits = 5, include_nominalPvalx2 = TRUE) {
   df <- hyp_testing_dataset %>%
-    dplyr::select(hypNames, alpha,
-                  Analysis, timing_vec, nominalPval, nominalPvalx2, deltaHat, pow) %>%
+    dplyr::select("hypNames", "alpha",
+                  "Analysis", "timing_vec", "nominalPval", "nominalPvalx2", "deltaHat", "pow") %>%
     dplyr::rename(
-      'Local alpha level'       = alpha,
-      'Info fraction'           = timing_vec,
-      'Nominal p-val (1-sided)' = nominalPval,
-      '2 x Nominal p-val'      = nominalPvalx2,
-      'Hurdle delta'            = deltaHat,
-      'Power'                   = pow
+      'Local alpha level'       = .data$alpha,
+      'Info fraction'           = .data$timing_vec,
+      'Nominal p-val (1-sided)' = .data$nominalPval,
+      '2 x Nominal p-val'       = .data$nominalPvalx2,
+      'Hurdle delta'            = .data$deltaHat,
+      'Power'                   = .data$pow
     )
   if (include_nominalPvalx2==FALSE)
     df <- df %>% dplyr::select( - '2 x Nominal p-val')
 
-  if (is_html_output()) {
+  if (knitr::is_html_output()) {
     df[,-1] %>%
-      kable("html", escape = F,
+      knitr::kable("html", escape = F,
             align   = "c",
             digits  = digits,
             caption = "Efficacy p-value Boundaries") %>%
-      kable_styling() %>%
-      pack_rows(
-        index         = table(fct_inorder(df$hypNames)),
+      kableExtra::kable_styling() %>%
+      kableExtra::pack_rows(
+        index         = table(forcats::fct_inorder(df$hypNames)),
         label_row_css = "text-align: left;"
       )  %>%
-      column_spec(column = 1, underline = TRUE, width = '3cm')
+      kableExtra::column_spec(column = 1, underline = TRUE, width = '3cm')
     # collapse_rows(columns = 1, valign = "middle")
-  } else if (is_latex_output()) {
+  } else if (knitr::is_latex_output()) {
     df <-
       data.frame(lapply(df, function(x) {
         gsub("<br>", "\n", x)
       }), stringsAsFactors = F)
     df[,-1] %>%
-      mutate_all(linebreak) %>%
-      kable(
+      dplyr::mutate_all(kableExtra::linebreak) %>%
+      knitr::kable(
         "latex",
-        booktabs = T,
-        escape = F,
+        booktabs  = T,
+        escape    = F,
         longtable = TRUE,
-        caption = "Efficacy p-value Boundaries"
+        caption   = "Efficacy p-value Boundaries"
       ) %>%
-      kable_styling(latex_options = c("hold_position", "repeat_header")) %>%
-      pack_rows(index = table(fct_inorder(df$hypNames)))
+      kableExtra::kable_styling(latex_options = c("hold_position", "repeat_header")) %>%
+      kableExtra::pack_rows(index = table(forcats::fct_inorder(df$hypNames)))
   } else if (knitr::pandoc_to("docx")) {
     #require(flextable)
     df <-
@@ -1044,10 +1047,14 @@ get_sf_name <- function(func) {
   return(res)
 }
 
+# Declare the operator explicitly to avoid notes
+# (add this in your R script or package setup)
+`%m+%` <- lubridate::`%m+%`
+
 # generate gtable of timelines of IA by hypotheses
 timeline_gtable <- function(D, startDate = "2022-10-12", lpi = NULL) {
   D <-
-    dplyr::filter(D, regiment == unique(D$regiment)[1]) # limit plotting to just a single regiment
+    dplyr::filter(D, .data$regiment == unique(D$regiment)[1]) # limit plotting to just a single regiment
   # Set hypothesis names in single vector
   hypothesis_names       <- D$hypNames
   J                      <- length(hypothesis_names)
@@ -1267,7 +1274,7 @@ exec_calc <- function(inputD) {
     match(c("regiment", "ep", "suffix"), names(D), nomatch = 0)
   if (!any(descr_fields))
     descr_fields <- match(c("tag"), names(D), nomatch = 0)
-  D$descr <- dplyr::select(D, descr_fields) %>% purrr::pmap_chr(., paste)
+  D$descr <- dplyr::select(D, descr_fields) %>% purrr::pmap_chr(.f = paste)
   D <-
     tibble::add_column(D, grSeqTestingCh = sapply(D$grSeqTesting, print_sfInfo))
 

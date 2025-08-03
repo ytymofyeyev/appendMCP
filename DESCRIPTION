@@ -18,15 +18,18 @@ RoxygenNote: 7.3.2
 Imports: 
     dplyr,
     flextable,
+    forcats,
     ggplot2,
     gMCP,
     gsDesign,
+    kableExtra,
     knitr,
     lubridate,
     magrittr,
     purrr,
     RColorBrewer,
     rlang,
+    stats,
     tibble,
     tidyr,
     vistime
