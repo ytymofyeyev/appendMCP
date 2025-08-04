@@ -1,16 +1,19 @@
 Package: appendMCP
 Type: Package
-Title: Tools for defining graphical multiple testing procedures in group sequential designs
+Title: Tools for defining graphical multiple testing procedures in group sequential design studies
 Version: 0.1.0
 Authors@R: c(
-    person(
-      "Tymofyeyev", "Yevgen",
-      email = "ytymofye@its.jnj.com",
-      role = c("aut", "cre")
+    person( "Yevgen", "Tymofyeyev", email = "ytymofye@its.jnj.com",role = c("aut", "cre")),
+    person( "Michael", "Grayling", email = "mgraylin@its.jnj.com",role = c("aut"),
     )
   )
-Description: More about what it does (maybe more than one line).
-    Continuation lines should be indented.
+Description:
+    appendMCP provides routines for describing graphical multiple comparison
+    procedures (MCP) in group sequential design (GSD) studies. The objective is
+    to generate an R Markdown file that defines the MTP and interim analyses,
+    which can be appended to a statistical analysis plan document.
+    The package provides predefined templates that can be modified by a user, 
+    ideally by changing only high-level input parameters.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true

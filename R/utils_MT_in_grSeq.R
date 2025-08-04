@@ -95,6 +95,7 @@ deriveIF <- function(D, enrollment, digits = 2) {
 #'
 #' @examples
 #' getDelta( x = structure(list(p1 = 0.04, p2=0.03, dropoutrate = 0.001), class="tte_exp"))
+#' @keywords internal
 getDelta <- function(x){
   UseMethod("getDelta", x)
 }
@@ -103,6 +104,7 @@ getDelta <- function(x){
 getDelta.default <- function(x) {
   x$p1 - x$p2
 }
+
 #' @export
 getDelta.tte_exp <- function(x) {
   x$p1 / x$p2     # return hazard ratio
@@ -119,6 +121,7 @@ getDelta.tte_exp <- function(x) {
 #'
 #' @examples
 #' getEffectSizeDetails( x = structure(list(p1 = 0.40, p2 = 0), class = "normal"))
+#' @keywords internal
 getEffectSizeDetails <- function (x) {
   UseMethod("getEffectSizeDetails", x)
 }
@@ -171,6 +174,7 @@ getEffectSizeDetails.tte_exp <- function(x) {
 #'
 #' @examples
 #' getStandardizingCoef(list(list(),class="tte_exp"),ratio=1)
+#' @keywords internal
 getStandardizingCoef <- function (x, ratio=1) {
   UseMethod("getStandardizingCoef", x )
 }
@@ -299,6 +303,7 @@ tEventsVec <- Vectorize(tEvents, c("hr", "n"))
 #' @param ratio An allocation ration
 #'
 #' @export
+#' @keywords internal
 n2Time <-
   function (x, n, enrollment, ratio) {
     UseMethod("n2Time", x)
@@ -345,6 +350,7 @@ n2Time.tte_exp <- function(x, n, enrollment, ratio = 1) {
 #' \dontrun{
 #'   Time2n(x, T, enrollment, ratio)
 #' }
+#' @keywords internal
 Time2n <-
   function (x, T, enrollment, ratio) {
     UseMethod("Time2n", x)
@@ -402,6 +408,7 @@ Time2n.tte_exp <- function(x, T, enrollment, ratio = 1) {
 #' \dontrun{
 #' plot_iaTiming(D,enrollment)
 #' }
+#' @keywords internal
 plot_iaTiming <-
   function(D,
            enrollment,
@@ -749,7 +756,7 @@ report_MT_grSeq <- function(
 
 # knit functions for tables ----
 
-#' Possible scenarios for a local significance level
+#' Local alpha scenarios
 #'
 #' @param hyp_testing_dataset A dataset defining testing hypotheses
 #' @param digits A scalar defining the number of digits to report in a table
@@ -761,6 +768,7 @@ report_MT_grSeq <- function(
 #' \dontrun{
 #' knit_MT_table(hyp_testing_dataset)
 #' }
+#' @keywords internal
 knit_MT_table <- function(hyp_testing_dataset, digits = 5) {
   df <- hyp_testing_dataset %>%
     dplyr::select("hypNames", "alpha", "possibleWeight", "rejectedHypInfo") %>%
@@ -807,21 +815,23 @@ knit_MT_table <- function(hyp_testing_dataset, digits = 5) {
   }
 }
 
-# prepare table that report scenarios as for cut-off nominal p-vals for all Hi at all analyses
+# prepare table the cut-off nominal p-vals for all Hi at all analyses
 
-#' Nominal p-value boundary
+#' Nominal p-value boundary scenarios
 #'
 #' @param hyp_testing_dataset A dataset defining testing hypotheses
 #' @param digits A scalar defining the number of digits to report in a table
 #' @param include_nominalPvalx2 logical; if TRUE a column with 2-sided p-values is reported
 #'
-#' @returns A table reporting boundaries to compare with observed p-values calculated for the test statistics at the corresponding analyses
+#' @returns A table reporting boundaries to compare with observed
+#' p-values calculated for the test statistics at the corresponding analyses
 #' @export
 #'
 #' @examples
 #' \dontrun{
 #' knit_MT_grSeq_table(hyp_testing_dataset)
 #' }
+#' @keywords internal
 knit_MT_grSeq_table <- function(hyp_testing_dataset, digits = 5, include_nominalPvalx2 = TRUE) {
   df <- hyp_testing_dataset %>%
     dplyr::select("hypNames", "alpha",
@@ -1191,7 +1201,7 @@ timeline_gtable <- function(D, startDate = "2022-10-12", lpi = NULL) {
 
 # main functions ----
 
-#' Title
+#' Check input specifications for consistency (Work in Progress!)
 #'
 #' @param inputD An input dataset
 #' @param G A graph object
@@ -1204,6 +1214,7 @@ timeline_gtable <- function(D, startDate = "2022-10-12", lpi = NULL) {
 #' \dontrun{
 #' checkInput(inputD,G)
 #' }
+#' @keywords internal
 checkInput <- function(inputD, G, enrollment = NULL) {
   N_rand <- cumsum(c(0, enrollment$rate * c(enrollment$duration)))
   numHyp <- nrow(inputD)
@@ -1220,16 +1231,17 @@ checkInput <- function(inputD, G, enrollment = NULL) {
     stop("Info fraction must be in (0,1]")
   # TODO
   # 1) check that enrollment and sample sizes for binary EPs are in agreement
+  # 2) ensure that spending function is specified if there are IAs
 
   if (is.null(inputD$tag))
     stop("Missing tag field in inputD")
 }
-#
-#' Processing util function that generate a content given input
+
+#' Input Processing
 #'
-#' @param inputD An input dataset with specs.
+#' @param inputD An input dataset with specifications
 #'
-#' @returns A list with main objects to be outputed: D, ia_details and hyp_testing_dataset
+#' @returns A list with main objects to be outputted: D, ia_details and hyp_testing_dataset
 #' @export
 #'
 #' @examples
@@ -1237,6 +1249,7 @@ checkInput <- function(inputD, G, enrollment = NULL) {
 #'   # Need to define inputD first
 #'   exec_calc(inputD)
 #' }
+#' @keywords internal
 exec_calc <- function(inputD) {
   checkInput(inputD, G)    # check the inputs TODO
 

@@ -18,3 +18,4 @@ n2Time(x, n, enrollment, ratio)
 \description{
 Get calendar time given sample size (or number events)
 }
+\keyword{internal}

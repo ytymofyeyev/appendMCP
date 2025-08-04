@@ -2,18 +2,18 @@
 % Please edit documentation in R/utils_MT_in_grSeq.R
 \name{exec_calc}
 \alias{exec_calc}
-\title{Processing util function that generate a content given input}
+\title{Input Processing}
 \usage{
 exec_calc(inputD)
 }
 \arguments{
-\item{inputD}{An input dataset with specs.}
+\item{inputD}{An input dataset with specifications}
 }
 \value{
-A list with main objects to be outputed: D, ia_details and hyp_testing_dataset
+A list with main objects to be outputted: D, ia_details and hyp_testing_dataset
 }
 \description{
-Processing util function that generate a content given input
+Input Processing
 }
 \examples{
 \dontrun{
@@ -21,3 +21,4 @@ Processing util function that generate a content given input
   exec_calc(inputD)
 }
 }
+\keyword{internal}

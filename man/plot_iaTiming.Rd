@@ -26,3 +26,4 @@ Enrollment and Data Availability Plot
 plot_iaTiming(D,enrollment)
 }
 }
+\keyword{internal}

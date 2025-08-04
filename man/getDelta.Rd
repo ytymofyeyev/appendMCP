@@ -18,3 +18,4 @@ Get a parameter under H1 on a natural scale
 \examples{
 getDelta( x = structure(list(p1 = 0.04, p2=0.03, dropoutrate = 0.001), class="tte_exp"))
 }
+\keyword{internal}

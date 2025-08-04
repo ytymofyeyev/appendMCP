@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_MT_in_grSeq.R
 \name{checkInput}
 \alias{checkInput}
-\title{Title}
+\title{Check input specifications for consistency (Work in Progress!)}
 \usage{
 checkInput(inputD, G, enrollment = NULL)
 }
@@ -17,10 +17,11 @@ checkInput(inputD, G, enrollment = NULL)
 A list of objects for output tables and plots
 }
 \description{
-Title
+Check input specifications for consistency (Work in Progress!)
 }
 \examples{
 \dontrun{
 checkInput(inputD,G)
 }
 }
+\keyword{internal}

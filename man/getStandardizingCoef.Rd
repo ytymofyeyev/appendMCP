@@ -20,3 +20,4 @@ Compute standardization factor, psi,  that link natural parameter to the effect 
 \examples{
 getStandardizingCoef(list(list(),class="tte_exp"),ratio=1)
 }
+\keyword{internal}

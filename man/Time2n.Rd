@@ -26,3 +26,4 @@ Calculate sample size (or number events) available at given calendar time
   Time2n(x, T, enrollment, ratio)
 }
 }
+\keyword{internal}

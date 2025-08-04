@@ -18,3 +18,4 @@ Format a string reporting effect
 \examples{
 getEffectSizeDetails( x = structure(list(p1 = 0.40, p2 = 0), class = "normal"))
 }
+\keyword{internal}

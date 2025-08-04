@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_MT_in_grSeq.R
 \name{knit_MT_table}
 \alias{knit_MT_table}
-\title{Possible scenarios for a local significance level}
+\title{Local alpha scenarios}
 \usage{
 knit_MT_table(hyp_testing_dataset, digits = 5)
 }
@@ -15,10 +15,11 @@ knit_MT_table(hyp_testing_dataset, digits = 5)
 A table that reports all possible scenarios for the local significance level
 }
 \description{
-Possible scenarios for a local significance level
+Local alpha scenarios
 }
 \examples{
 \dontrun{
 knit_MT_table(hyp_testing_dataset)
 }
 }
+\keyword{internal}

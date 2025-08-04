@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_MT_in_grSeq.R
 \name{knit_MT_grSeq_table}
 \alias{knit_MT_grSeq_table}
-\title{Nominal p-value boundary}
+\title{Nominal p-value boundary scenarios}
 \usage{
 knit_MT_grSeq_table(
   hyp_testing_dataset,
@@ -18,13 +18,15 @@ knit_MT_grSeq_table(
 \item{include_nominalPvalx2}{logical; if TRUE a column with 2-sided p-values is reported}
 }
 \value{
-A table reporting boundaries to compare with observed p-values calculated for the test statistics at the corresponding analyses
+A table reporting boundaries to compare with observed
+p-values calculated for the test statistics at the corresponding analyses
 }
 \description{
-Nominal p-value boundary
+Nominal p-value boundary scenarios
 }
 \examples{
 \dontrun{
 knit_MT_grSeq_table(hyp_testing_dataset)
 }
 }
+\keyword{internal}
