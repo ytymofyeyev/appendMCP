@@ -4,3 +4,7 @@
 .Ruserdata
 *.Rproj
 private/
+inst/doc
+/doc/
+/Meta/
+docs

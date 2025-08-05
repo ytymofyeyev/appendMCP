@@ -1,9 +1,3 @@
-# Some useful keyboard shortcuts for package authoring:
-#
-#   Install Package:           'Cmd + Shift + B'
-#   Check Package:             'Cmd + Shift + E'
-#   Test Package:              'Cmd + Shift + T'
-
 #' @importFrom rlang .data
 
 utils::globalVariables(c("numHyp", "alphaTotal",
@@ -86,26 +80,32 @@ deriveIF <- function(D, enrollment, digits = 2) {
   return(IFs)
 }
 
-#' Get a parameter under H1 on a natural scale
-#'
+# Obtain the parameter under H1 on the natural scale ----
+
+#' appendMCP internal S3 
+#' @description Obtain the parameter under H1 on the natural scale
 #' @param x A endpoint object
-#'
-#' @returns A value of parameter on a natural scale under H1
-#' @export
-#'
-#' @examples
-#' getDelta( x = structure(list(p1 = 0.04, p2=0.03, dropoutrate = 0.001), class="tte_exp"))
 #' @keywords internal
+#' @name getDelta
+#' @rdname internalS3
 getDelta <- function(x){
   UseMethod("getDelta", x)
 }
 
 #' @export
+#' @method getDelta default
+#' @keywords internal
+#' @name getDelta.default
+#' @rdname internalS3
 getDelta.default <- function(x) {
   x$p1 - x$p2
 }
 
 #' @export
+#' @method getDelta tte_exp
+#' @keywords internal
+#' @name getDelta.tte_exp
+#' @rdname internalS3
 getDelta.tte_exp <- function(x) {
   x$p1 / x$p2     # return hazard ratio
 }
@@ -115,27 +115,30 @@ getDelta.tte_pwe <- function(x) {
   head(x$p1/x$p2, 1)     # return hazard ratio
 }
 
-# extract effect size info (hypothesis parameter on the natural scale) ----
+# Format details of the effect size (parameter on the natural scale) ----
 
-#' Format a string reporting effect
-#'
+#' @description Format a string reporting the effect
 #' @param x An endpoint object
-#'
-#' @returns A character vector
-#' @export
-#'
-#' @examples
-#' getEffectSizeDetails( x = structure(list(p1 = 0.40, p2 = 0), class = "normal"))
 #' @keywords internal
+#' @name getEffectSizeDetails
+#' @rdname internalS3
 getEffectSizeDetails <- function (x) {
   UseMethod("getEffectSizeDetails", x)
 }
 
+#' @method getEffectSizeDetails normal
+#' @keywords internal
+#' @name getEffectSizeDetails.normal
+#' @rdname internalS3
 #' @export
 getEffectSizeDetails.normal <- function(x) {
   sprintf("%2.f", x$p1 - x$p2)
 }
 
+#' @method getEffectSizeDetails binomial
+#' @keywords internal
+#' @name getEffectSizeDetails.binomial
+#' @rdname internalS3
 #' @export
 getEffectSizeDetails.binomial <- function(x) {
   sprintf("%.2f (%d%% vs %d%%)",
@@ -144,6 +147,10 @@ getEffectSizeDetails.binomial <- function(x) {
           round(x$p2 * 100))
 }
 
+#' @method getEffectSizeDetails binomial_pooled
+#' @keywords internal
+#' @name getEffectSizeDetails.binomial_pooled
+#' @rdname internalS3
 #' @export
 getEffectSizeDetails.binomial_pooled <- function(x) {
   sprintf("%.2f (%d%% vs %d%%)",
@@ -152,6 +159,10 @@ getEffectSizeDetails.binomial_pooled <- function(x) {
           round(x$p2 * 100))
 }
 
+#' @method getEffectSizeDetails binomial_unpooled
+#' @keywords internal
+#' @name getEffectSizeDetails.binomial_unpooled
+#' @rdname internalS3
 #' @export
 getEffectSizeDetails.binomial_unpooled <- function(x) {
   sprintf("%.2f (%d%% vs %d%%)",
@@ -159,6 +170,11 @@ getEffectSizeDetails.binomial_unpooled <- function(x) {
           round(x$p1 * 100),
           round(x$p2 * 100))
 }
+
+#' @method getEffectSizeDetails tte_exp
+#' @keywords internal
+#' @name getEffectSizeDetails.tte_exp
+#' @rdname internalS3
 #' @export
 getEffectSizeDetails.tte_exp <- function(x) {
   sprintf("HR = %.2f (mCntl = %.1f mo)", x$p1 / x$p2,-log(1 / 2) / x$p2)
@@ -178,32 +194,43 @@ getEffectSizeDetails.tte_pwe <- function(x) {
           med_pwe(x$durations, x$p2))
 }
 
-###############################################################################
+# compute standardization factor ----
 
 # compute standardization factor, psi,  that link natural parameter to the effect size, theta
 # that non-centrality parameter is in the form theta*sqrt(n)= psi*delta*sgrt(n)
 # e.g, for log-rank test, psi = sqrt(c*(1-c)), where c=1/(1+ratio), ratio is the allocation ratio
 
-#' Compute standardization factor, psi,  that link natural parameter to the effect size, theta
+#' @description
+#'  Compute standardization factor, psi, that links
+#' natural parameter to the effect size, theta
 #'
 #' @param x An endpoint object
 #' @param ratio Allocation ratio
-#'
-#' @returns A value of standardization factor
-#' @export
-#'
-#' @examples
-#' getStandardizingCoef(list(list(),class="tte_exp"),ratio=1)
 #' @keywords internal
+#' @name getStandardizingCoef
+#' @rdname internalS3
+#' 
+#' @examplesIf FALSE
+#' # Internally dispatched examples (for development or internal tests)
+#' getStandardizingCoef(list(list(), class = "tte_exp"), ratio = 1)
+#' # should return 0.5
 getStandardizingCoef <- function (x, ratio=1) {
   UseMethod("getStandardizingCoef", x )
 }
 
+#' @method getStandardizingCoef default
+#' @keywords internal
+#' @name getStandardizingCoef.default
+#' @rdname internalS3
 #' @export
 getStandardizingCoef.default <- function(x, ratio = 1){
   sqrt(ratio)/(1+ratio) * 1
 }
 
+#' @method getStandardizingCoef binomial
+#' @keywords internal
+#' @name getStandardizingCoef.binomial
+#' @rdname internalS3
 #' @export
 getStandardizingCoef.binomial <- function(x, ratio = 1){
   # x$alpha and x$beta use used to calibrate standardization coefficient
@@ -218,6 +245,10 @@ getStandardizingCoef.binomial <- function(x, ratio = 1){
 }
 
 # binomial_pooled gives somewhat conservative power
+#' @method getStandardizingCoef binomial_pooled
+#' @keywords internal
+#' @name getStandardizingCoef.binomial_pooled
+#' @rdname internalS3
 #' @export
 getStandardizingCoef.binomial_pooled <- function(x, ratio = 1){
   if(!is.array(x$pPooled)) pPooled <- x$pPooled
@@ -225,6 +256,10 @@ getStandardizingCoef.binomial_pooled <- function(x, ratio = 1){
   sqrt(ratio)/(1+ratio) / sqrt( pPooled *(1-pPooled))
 }
 
+#' @method getStandardizingCoef binomial_unpooled
+#' @keywords internal
+#' @name getStandardizingCoef.binomial_unpooled
+#' @rdname internalS3
 #' @export
 getStandardizingCoef.binomial_unpooled <- function(x, ratio = 1){
   1/sqrt(x$p1*(1-x$p1)*(1+ratio) + x$p2*(1-x$p2)*(1+ratio)/ratio)
@@ -315,20 +350,23 @@ tEvents <-
   }
 tEventsVec <- Vectorize(tEvents, c("hr", "n"))
 
-#' Get calendar time given sample size (or number events)
+#' @description
+#' Obtain a calendar time given the sample size (or events)
 #' @param x An endpoint object
-#'
 #' @param n A sample size or number of events
 #' @param enrollment A enrollement object
 #' @param ratio An allocation ration
-#'
-#' @export
 #' @keywords internal
-n2Time <-
-  function (x, n, enrollment, ratio) {
-    UseMethod("n2Time", x)
-  }
+#' @rdname internalS3
+#' @name n2Time
+n2Time <- function (x, n, enrollment, ratio) {
+  UseMethod("n2Time", x)
+}
 
+#' @method n2Time default
+#' @keywords internal
+#' @name n2Time.default
+#' @rdname internalS3
 #' @export
 n2Time.default <- function(x, n, enrollment, ratio = 1) {
   fun <- function(t) {
@@ -343,6 +381,10 @@ n2Time.default <- function(x, n, enrollment, ratio = 1) {
   stats::uniroot(fun, c(0, accrualDuration + x$maturityTime))$root
 }
 
+#' @method n2Time tte_exp
+#' @keywords internal
+#' @name n2Time.tte_exp
+#' @rdname internalS3
 #' @export
 n2Time.tte_exp <- function(x, n, enrollment, ratio = 1) {
   tEvents(
@@ -370,26 +412,25 @@ n2Time.tte_pwe <- function(x, n, enrollment, ratio = 1) {
   )
 }
 
-#' Calculate sample size (or number events) available at given calendar time
+#' @description
+#'  Calculate the sample size (or the number of events) available
+#'  at the given calendar time
 #'
 #' @param x An endpoint object
 #' @param T Calendar time points
 #' @param enrollment Enrollment object
 #' @param ratio Allocation ratio
-#'
-#' @returns Sample size (or number events)
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#'   Time2n(x, T, enrollment, ratio)
-#' }
 #' @keywords internal
-Time2n <-
-  function (x, T, enrollment, ratio) {
-    UseMethod("Time2n", x)
-  }
+#' @rdname internalS3
+#' @name Time2n
+Time2n <- function (x, T, enrollment, ratio) {
+  UseMethod("Time2n", x)
+}
 
+#' @method Time2n default
+#' @keywords internal
+#' @name Time2n.default
+#' @rdname internalS3
 #' @export
 Time2n.default <- function(x, T, enrollment, ratio = 1) {
   if (is.null(x$dropoutHazard))
@@ -410,9 +451,12 @@ Time2n.default <- function(x, T, enrollment, ratio = 1) {
     rule = 2,
     xout = T
   )$y
-
 }
 
+#' @method Time2n tte_exp
+#' @keywords internal
+#' @name Time2n.tte_exp
+#' @rdname internalS3
 #' @export
 Time2n.tte_exp <- function(x, T, enrollment, ratio = 1) {
   eEvents_totalVec(
@@ -607,8 +651,8 @@ getPossibleWeightsInfo <- function(G, # G is gMCP graph object
     paste(aux, collapse = " or ", sep = "_")
   }  # formRejStr
 
-  K <- length(gMCP::getNodes(G)) # number of hypotheses in G
-  W <- gMCP::generateWeights(G)
+  K <- length(gMCPLite::getNodes(G)) # number of hypotheses in G
+  W <- gMCPLite::generateWeights(G)
   # For each Hj generate possible weights and info of rejection scenarios that lead to that weight
   res <-
     tibble::tibble(Hint = apply(W[, 1:K], 1, c, simplify = FALSE),
@@ -645,7 +689,7 @@ report_MT_grSeq <- function(
     powdigits = 2      # power digits
 )
 {
-  nodes <- gMCP::getNodes(G)
+  nodes <- gMCPLite::getNodes(G)
   m <- length(nodes)
 
   # possibleWeight <- apply(generateWeights(G)[,-c(1:m)],2,unique,simplify = FALSE)

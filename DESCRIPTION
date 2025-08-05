@@ -23,7 +23,7 @@ Imports:
     flextable,
     forcats,
     ggplot2,
-    gMCP,
+    gMCPLite,
     gsDesign,
     gsDesign2,
     kableExtra,
@@ -37,3 +37,7 @@ Imports:
     tibble,
     tidyr,
     vistime
+Suggests: 
+    rmarkdown
+VignetteBuilder: knitr
+URL: https://ytymofyeyev.github.io/appendMCP/
