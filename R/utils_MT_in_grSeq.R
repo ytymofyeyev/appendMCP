@@ -86,12 +86,13 @@ deriveIF <- function(D, enrollment, digits = 2) {
 #' @description Obtain the parameter under H1 on the natural scale
 #' @param x A endpoint object
 #' @keywords internal
-#' @rdname internalS3
 #' @name getDelta
+#' @rdname internalS3
 getDelta <- function(x){
   UseMethod("getDelta", x)
 }
 
+#' @export
 #' @method getDelta default
 #' @keywords internal
 #' @name getDelta.default
@@ -100,6 +101,7 @@ getDelta.default <- function(x) {
   x$p1 - x$p2
 }
 
+#' @export
 #' @method getDelta tte_exp
 #' @keywords internal
 #' @name getDelta.tte_exp
@@ -109,7 +111,8 @@ getDelta.tte_exp <- function(x) {
 }
 
 # Format details of the effect size (parameter on the natural scale) ----
-
+#' Internal S3 method
+#' 
 #' @description Format a string reporting the effect
 #' @param x An endpoint object
 #' @keywords internal
@@ -123,6 +126,7 @@ getEffectSizeDetails <- function (x) {
 #' @keywords internal
 #' @name getEffectSizeDetails.normal
 #' @rdname internalS3
+#' @export
 getEffectSizeDetails.normal <- function(x) {
   sprintf("%2.f", x$p1 - x$p2)
 }
@@ -131,6 +135,7 @@ getEffectSizeDetails.normal <- function(x) {
 #' @keywords internal
 #' @name getEffectSizeDetails.binomial
 #' @rdname internalS3
+#' @export
 getEffectSizeDetails.binomial <- function(x) {
   sprintf("%.2f (%d%% vs %d%%)",
           x$p1 - x$p2,
@@ -142,6 +147,7 @@ getEffectSizeDetails.binomial <- function(x) {
 #' @keywords internal
 #' @name getEffectSizeDetails.binomial_pooled
 #' @rdname internalS3
+#' @export
 getEffectSizeDetails.binomial_pooled <- function(x) {
   sprintf("%.2f (%d%% vs %d%%)",
           x$p1 - x$p2,
@@ -153,6 +159,7 @@ getEffectSizeDetails.binomial_pooled <- function(x) {
 #' @keywords internal
 #' @name getEffectSizeDetails.binomial_unpooled
 #' @rdname internalS3
+#' @export
 getEffectSizeDetails.binomial_unpooled <- function(x) {
   sprintf("%.2f (%d%% vs %d%%)",
           x$p1 - x$p2,
@@ -164,6 +171,7 @@ getEffectSizeDetails.binomial_unpooled <- function(x) {
 #' @keywords internal
 #' @name getEffectSizeDetails.tte_exp
 #' @rdname internalS3
+#' @export
 getEffectSizeDetails.tte_exp <- function(x) {
   sprintf("HR = %.2f (mCntl = %.1f mo)", x$p1 / x$p2,-log(1 / 2) / x$p2)
 }
@@ -196,6 +204,7 @@ getStandardizingCoef <- function (x, ratio=1) {
 #' @keywords internal
 #' @name getStandardizingCoef.default
 #' @rdname internalS3
+#' @export
 getStandardizingCoef.default <- function(x, ratio = 1){
   sqrt(ratio)/(1+ratio) * 1
 }
@@ -204,6 +213,7 @@ getStandardizingCoef.default <- function(x, ratio = 1){
 #' @keywords internal
 #' @name getStandardizingCoef.binomial
 #' @rdname internalS3
+#' @export
 getStandardizingCoef.binomial <- function(x, ratio = 1){
   # x$alpha and x$beta use used to calibrate standardization coefficient
   # when mapping binomial rates to normal effect size using n.I
@@ -221,6 +231,7 @@ getStandardizingCoef.binomial <- function(x, ratio = 1){
 #' @keywords internal
 #' @name getStandardizingCoef.binomial_pooled
 #' @rdname internalS3
+#' @export
 getStandardizingCoef.binomial_pooled <- function(x, ratio = 1){
   if(!is.array(x$pPooled)) pPooled <- x$pPooled
   if (!is.null(x$p1) & !is.null(x$p2)) pPooled <- 1/(1+ratio)*(x$p1+ratio*x$p2)
@@ -231,6 +242,7 @@ getStandardizingCoef.binomial_pooled <- function(x, ratio = 1){
 #' @keywords internal
 #' @name getStandardizingCoef.binomial_unpooled
 #' @rdname internalS3
+#' @export
 getStandardizingCoef.binomial_unpooled <- function(x, ratio = 1){
   1/sqrt(x$p1*(1-x$p1)*(1+ratio) + x$p2*(1-x$p2)*(1+ratio)/ratio)
 }
@@ -337,6 +349,7 @@ n2Time <- function (x, n, enrollment, ratio) {
 #' @keywords internal
 #' @name n2Time.default
 #' @rdname internalS3
+#' @export
 n2Time.default <- function(x, n, enrollment, ratio = 1) {
   fun <- function(t) {
     Time2n(x, t, enrollment = enrollment, ratio = ratio) - n
@@ -354,6 +367,7 @@ n2Time.default <- function(x, n, enrollment, ratio = 1) {
 #' @keywords internal
 #' @name n2Time.tte_exp
 #' @rdname internalS3
+#' @export
 n2Time.tte_exp <- function(x, n, enrollment, ratio = 1) {
   tEvents(
     n = n,
@@ -377,10 +391,6 @@ n2Time.tte_exp <- function(x, n, enrollment, ratio = 1) {
 #' @keywords internal
 #' @rdname internalS3
 #' @name Time2n
-#' @examplesIf FALSE
-#' \dontrun{
-#'   Time2n(x, T, enrollment, ratio)
-#' }
 Time2n <- function (x, T, enrollment, ratio) {
   UseMethod("Time2n", x)
 }
@@ -389,6 +399,7 @@ Time2n <- function (x, T, enrollment, ratio) {
 #' @keywords internal
 #' @name Time2n.default
 #' @rdname internalS3
+#' @export
 Time2n.default <- function(x, T, enrollment, ratio = 1) {
   if (is.null(x$dropoutHazard))
     eta <- 0
@@ -414,6 +425,7 @@ Time2n.default <- function(x, T, enrollment, ratio = 1) {
 #' @keywords internal
 #' @name Time2n.tte_exp
 #' @rdname internalS3
+#' @export
 Time2n.tte_exp <- function(x, T, enrollment, ratio = 1) {
   eEvents_totalVec(
     T = T,

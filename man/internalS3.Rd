@@ -93,10 +93,5 @@ Calculate the sample size (or the number of events) available
 getStandardizingCoef(list(list(), class = "tte_exp"), ratio = 1)
 # should return 0.5
 \dontshow{\}) # examplesIf}
-\dontshow{if (FALSE) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
-\dontrun{
-  Time2n(x, T, enrollment, ratio)
-}
-\dontshow{\}) # examplesIf}
 }
 \keyword{internal}

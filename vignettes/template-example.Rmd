@@ -1,32 +1,10 @@
 ---
-title: "Supplement for Interim Analysis and Multiple Testing Strategy in TEMPLATE Study"
-date: "`r Sys.Date()`"
-output:
-  bookdown::html_document2:
-    toc: yes
-    toc_depth: 3
-    toc_float: yes
-    number_sections: no
-    self_contained: yes
-    highlight: pygments
-    code_folding: hide
-    code_download: true
-  pdf_document:
-    toc: no
-    toc_depth: '3'
-    keep_tex: yes
-  html_document:
-    toc: no
-    toc_depth: 3
-    toc_float: yes
-    number_sections: no
-    self_contained: yes
-    highlight: pygments
-    code_folding: hide
-    code_download: true
-  word_document:
-    toc: no
-    toc_depth: '3'
+title: "template-example"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{template-example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
@@ -48,6 +26,7 @@ library(stats)
 library(tibble)
 library(tidyr)
 library(vistime)
+
 
 knitr::opts_chunk$set(
   collapse   = TRUE,

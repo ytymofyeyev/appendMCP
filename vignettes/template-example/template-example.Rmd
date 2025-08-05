@@ -31,23 +31,12 @@ output:
 
 ```{r setup, include=FALSE}
 library(appendMCP)
-library(dplyr)
-library(flextable)
-library(forcats)
-library(ggplot2)
-library(gMCPLite)
+library(tidyverse)
 library(gsDesign)
+library(gMCPLite)
+library(mvtnorm)
 library(kableExtra)
 library(knitr)
-library(lubridate)
-library(magrittr)
-library(purrr)
-library(RColorBrewer)
-library(rlang)
-library(stats)
-library(tibble)
-library(tidyr)
-library(vistime)
 
 knitr::opts_chunk$set(
   collapse   = TRUE,
