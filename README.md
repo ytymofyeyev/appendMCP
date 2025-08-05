@@ -26,7 +26,7 @@ You can install the development version of appendMCP from
 remotes::install_github("ytymofyeyev/appendMCP")
 ```
 
-## Example
+## Usage
 
 To load a template in RStudio, go to **File** $\rightarrow$ **New File**
 $\rightarrow$ **R Markdown …** , select **From Template** (on left
@@ -47,3 +47,11 @@ After that, you can knit the R Markdown file to generate a report.
 
 The report describes the trial design and assumptions, interim analyses,
 hypothesis testing, and other relevant information.
+
+## Example Report Output
+
+You can view a rendered example of the R Markdown template in the
+following vignette:
+
+👉 [Example Report from appendMCP
+Template](https://ytymofyeyev.github.io/appendMCP/articles/template-example.html)
