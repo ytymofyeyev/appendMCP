@@ -110,6 +110,11 @@ getDelta.tte_exp <- function(x) {
   x$p1 / x$p2     # return hazard ratio
 }
 
+#' @export
+getDelta.tte_pwe <- function(x) {
+  head(x$p1/x$p2, 1)     # return hazard ratio
+}
+
 # extract effect size info (hypothesis parameter on the natural scale) ----
 
 #' Format a string reporting effect
@@ -158,6 +163,21 @@ getEffectSizeDetails.binomial_unpooled <- function(x) {
 getEffectSizeDetails.tte_exp <- function(x) {
   sprintf("HR = %.2f (mCntl = %.1f mo)", x$p1 / x$p2,-log(1 / 2) / x$p2)
 }
+
+# Median of a PWE distribution
+med_pwe <- function(duration, rate) {
+  stats::uniroot(
+    f        = \(x) gsDesign2::ppwe(x, duration, rate) - 0.5,
+    interval = c(1e-6, 1e6)
+  )$root
+}
+
+#' @export
+getEffectSizeDetails.tte_pwe <- function(x) {
+  sprintf("HR = %.2f (mCntl = %.1f mo)", head(x$p1 / x$p2, 1),
+          med_pwe(x$durations, x$p2))
+}
+
 ###############################################################################
 
 # compute standardization factor, psi,  that link natural parameter to the effect size, theta
@@ -336,6 +356,20 @@ n2Time.tte_exp <- function(x, n, enrollment, ratio = 1) {
   )
 }
 
+#' @export
+n2Time.tte_pwe <- function(x, n, enrollment, ratio = 1) {
+  tEvents(
+    n = n,
+    hr = head(x$p1 / x$p2, 1),
+    ratio = ratio,
+    lambdaC = x$p2,
+    eta = x$dropoutHazard,
+    gamma = enrollment$rate,
+    R = enrollment$duration,
+    S = x$durations,
+  )
+}
+
 #' Calculate sample size (or number events) available at given calendar time
 #'
 #' @param x An endpoint object
@@ -389,6 +423,20 @@ Time2n.tte_exp <- function(x, T, enrollment, ratio = 1) {
     eta = x$dropoutHazard,
     gamma = enrollment$rate,
     R = enrollment$duration
+  )
+}
+
+#' @export
+Time2n.tte_pwe <- function(x, T, enrollment, ratio = 1) {
+  eEvents_totalVec(
+    T = T,
+    hr = head(x$p1 / x$p2, 1),
+    ratio = ratio,
+    lambdaC = x$p2,
+    eta = x$dropoutHazard,
+    gamma = enrollment$rate,
+    R = enrollment$duration,
+    S = x$durations
   )
 }
 
@@ -1260,7 +1308,7 @@ exec_calc <- function(inputD) {
     # get standardization factor to calculate effect sizes 'theta'
     standFactor = purrr::map2_dbl(.data$endpointParam, .data$allocRatio, getStandardizingCoef),
     logDelta  = purrr::map_lgl(.data$endpointParam, function(x)
-      class(x) %in% "tte_exp"),
+      class(x) %in% c("tte_exp", "tte_pwe")),
     theta =  dplyr::if_else(.data$logDelta,-log(.data$delta) * .data$standFactor, .data$delta * .data$standFactor),
     hypNames = paste(.data$id, .data$tag, sep = ": ")  # combine ID and tag names into full name
   )

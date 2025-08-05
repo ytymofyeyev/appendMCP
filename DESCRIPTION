@@ -25,6 +25,7 @@ Imports:
     ggplot2,
     gMCP,
     gsDesign,
+    gsDesign2,
     kableExtra,
     knitr,
     lubridate,
