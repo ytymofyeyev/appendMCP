@@ -1,7 +1,0 @@
-pandoc: '3.4'
-pkgdown: 2.1.3
-pkgdown_sha: ~
-articles:
-  template-example/template-example: template-example/template-example.html
-  template-example: template-example.html
-last_built: 2025-08-05T22:05Z
