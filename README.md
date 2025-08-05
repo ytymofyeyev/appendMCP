@@ -5,6 +5,7 @@
 
 <!-- badges: start -->
 
+<img src="man/figures/logo.png" align="right" height="150" />
 <!-- badges: end -->
 
 The goal of appendMCP is to provide routines for describing graphical
