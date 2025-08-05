@@ -23,7 +23,7 @@ Imports:
     flextable,
     forcats,
     ggplot2,
-    gMCP,
+    gMCPLite,
     gsDesign,
     kableExtra,
     knitr,

@@ -34,11 +34,9 @@ library(appendMCP)
 library(tidyverse)
 library(gsDesign)
 library(gMCPLite)
-library(gMCP)
 library(mvtnorm)
 library(kableExtra)
 library(knitr)
-# require(lubridate)
 
 knitr::opts_chunk$set(
   collapse   = TRUE,
@@ -205,8 +203,8 @@ graphFigure   <- gMCPLite::hGraph(
   # relative position of plots on MT graph
   x               = c(1, 3, 2, 4),
   y               = c(0, 0, -1, -1),
-  alphaHypotheses = gMCP::getWeights(G),
-  m               = gMCP::getMatrix(G),
+  alphaHypotheses = gMCPLite::getWeights(G),
+  m               = gMCPLite::getMatrix(G),
   wchar           = "w"
 )
 
