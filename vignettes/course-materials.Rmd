@@ -1,0 +1,99 @@
+---
+title: "Course materials"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Course materials}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Practicals
+
+## Simple GSD optimization
+
+**Description:**
+
+Set an optimization criterion as a function of parameter(s).\
+Use numerical solvers, e.g., `stats::nlminb()`.
+
+**Exercise:**
+
+-   Explore how the optimal parameter changes for a 3-stage design with IA analyses at 0.25 and 0.75 information fractions.
+
+-   Compare the expected number of subjects (`N`) to that of an equally spaced 3-stage design.
+
+```{r}
+library(gsDesign)
+
+opt_fun <- function(
+    x,                 # optimization parameter
+    timing = c(0.5,1), # timing of IAs
+    delta  = 1,        # target effect size 
+    theta,             # effect size vector for which to get expected value N
+    thetawgt,          # corresponing weight
+    k = 2,             # number of analysis
+    alpha = 0.025,     # Type I 
+    beta  = 0.1,
+    sfu = "WT"
+) {
+  # Derive design
+  d <- gsDesign(
+    k = k,            
+    timing = timing,   
+    test.type = 1,     
+    alpha     = alpha, 
+    beta      = beta,  
+    delta     = delta, 
+    sfu = "WT",        
+    sfupar = x[1]     
+  )
+  # Compute boundary crossing probabilities for input theta
+  y <- gsProbability(theta = theta, d = d)
+  # Compute weighted average of expected values of N 
+  sp_1 <- head(y$upper$prob,-1)
+  en <- sum(y$n.I * c(sp_1, 1 - sum(sp_1)))
+  en <- sum(as.vector(en) * as.vector(thetawgt))
+  return(en)
+}
+
+
+effect_size_H1 <- -log(0.60)/2  # standardized effect size under H1
+
+# Call optimizer 
+x <- nlminb(
+  start = c(0.15),    # starting value for opt_fun
+  opt_fun,            # function to optimize
+                      # other fixed parameters
+  k = 3,
+  timing   = c(1, 2, 3)/3,
+  alpha    = 0.025,
+  beta     = 0.2,
+  delta    = effect_size_H1,  # effect size under alternative
+  theta    = effect_size_H1,  # to compute EN under H1
+  thetawgt = 1,
+)
+# Optimal value of parameter for WT boundary
+x$par
+
+# optimization function value at optimal 
+x$objective
+
+# check the resulting GSD
+gsDesign(
+  k = 3,
+  test.type = 1,
+  delta = effect_size_H1,
+  alpha = 0.025,
+  beta  = 0.2,
+  timing = c(1,2,3)/3,
+  sfu = "WT",
+  sfupar = x$par,
+)
+```
