@@ -111,8 +111,12 @@ getDelta.tte_exp <- function(x) {
 }
 
 #' @export
+#' @method getDelta tte_pwe
+#' @keywords internal
+#' @name getDelta.tte_pwe
+#' @rdname internalS3
 getDelta.tte_pwe <- function(x) {
-  head(x$p1/x$p2, 1)     # return hazard ratio
+  utils::head(x$p1/x$p2, 1)     # return hazard ratio
 }
 
 # Format details of the effect size (parameter on the natural scale) ----
@@ -188,9 +192,13 @@ med_pwe <- function(duration, rate) {
   )$root
 }
 
+#' @method getEffectSizeDetails tte_pwe
+#' @keywords internal
+#' @name getEffectSizeDetails.tte_pwe
+#' @rdname internalS3
 #' @export
 getEffectSizeDetails.tte_pwe <- function(x) {
-  sprintf("HR = %.2f (mCntl = %.1f mo)", head(x$p1 / x$p2, 1),
+  sprintf("HR = %.2f (mCntl = %.1f mo)", utils::head(x$p1 / x$p2, 1),
           med_pwe(x$durations, x$p2))
 }
 
@@ -398,11 +406,15 @@ n2Time.tte_exp <- function(x, n, enrollment, ratio = 1) {
   )
 }
 
+#' @method n2Time tte_pwe
+#' @keywords internal
+#' @name n2Time.tte_pwe
+#' @rdname internalS3
 #' @export
 n2Time.tte_pwe <- function(x, n, enrollment, ratio = 1) {
   tEvents(
     n = n,
-    hr = head(x$p1 / x$p2, 1),
+    hr = utils::head(x$p1 / x$p2, 1),
     ratio = ratio,
     lambdaC = x$p2,
     eta = x$dropoutHazard,
@@ -470,11 +482,15 @@ Time2n.tte_exp <- function(x, T, enrollment, ratio = 1) {
   )
 }
 
+#' @method Time2n tte_pwe
+#' @keywords internal
+#' @name Time2n.tte_pwe
+#' @rdname internalS3
 #' @export
 Time2n.tte_pwe <- function(x, T, enrollment, ratio = 1) {
   eEvents_totalVec(
     T = T,
-    hr = head(x$p1 / x$p2, 1),
+    hr = utils::head(x$p1 / x$p2, 1),
     ratio = ratio,
     lambdaC = x$p2,
     eta = x$dropoutHazard,

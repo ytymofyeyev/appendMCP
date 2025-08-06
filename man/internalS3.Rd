@@ -4,12 +4,14 @@
 \alias{getDelta}
 \alias{getDelta.default}
 \alias{getDelta.tte_exp}
+\alias{getDelta.tte_pwe}
 \alias{getEffectSizeDetails}
 \alias{getEffectSizeDetails.normal}
 \alias{getEffectSizeDetails.binomial}
 \alias{getEffectSizeDetails.binomial_pooled}
 \alias{getEffectSizeDetails.binomial_unpooled}
 \alias{getEffectSizeDetails.tte_exp}
+\alias{getEffectSizeDetails.tte_pwe}
 \alias{getStandardizingCoef}
 \alias{getStandardizingCoef.default}
 \alias{getStandardizingCoef.binomial}
@@ -18,9 +20,11 @@
 \alias{n2Time}
 \alias{n2Time.default}
 \alias{n2Time.tte_exp}
+\alias{n2Time.tte_pwe}
 \alias{Time2n}
 \alias{Time2n.default}
 \alias{Time2n.tte_exp}
+\alias{Time2n.tte_pwe}
 \title{appendMCP internal S3}
 \usage{
 getDelta(x)
@@ -28,6 +32,8 @@ getDelta(x)
 \method{getDelta}{default}(x)
 
 \method{getDelta}{tte_exp}(x)
+
+\method{getDelta}{tte_pwe}(x)
 
 getEffectSizeDetails(x)
 
@@ -40,6 +46,8 @@ getEffectSizeDetails(x)
 \method{getEffectSizeDetails}{binomial_unpooled}(x)
 
 \method{getEffectSizeDetails}{tte_exp}(x)
+
+\method{getEffectSizeDetails}{tte_pwe}(x)
 
 getStandardizingCoef(x, ratio = 1)
 
@@ -57,11 +65,15 @@ n2Time(x, n, enrollment, ratio)
 
 \method{n2Time}{tte_exp}(x, n, enrollment, ratio = 1)
 
+\method{n2Time}{tte_pwe}(x, n, enrollment, ratio = 1)
+
 Time2n(x, T, enrollment, ratio)
 
 \method{Time2n}{default}(x, T, enrollment, ratio = 1)
 
 \method{Time2n}{tte_exp}(x, T, enrollment, ratio = 1)
+
+\method{Time2n}{tte_pwe}(x, T, enrollment, ratio = 1)
 }
 \arguments{
 \item{x}{An endpoint object}

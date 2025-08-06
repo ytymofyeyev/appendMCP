@@ -25,6 +25,13 @@ Select "From Template" (left panel), then choose "MCP in GSD"
 # rstudioapi::navigateToFile("my_report/my_report.Rmd")
 
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://ytymofyeyev.github.io/appendMCP/}
+}
+
+}
 \author{
 \strong{Maintainer}: Yevgen Tymofyeyev \email{ytymofye@its.jnj.com}
 

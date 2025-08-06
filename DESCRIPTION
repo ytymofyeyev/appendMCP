@@ -36,6 +36,7 @@ Imports:
     stats,
     tibble,
     tidyr,
+    utils,
     vistime
 Suggests: 
     rmarkdown

@@ -47,6 +47,7 @@ library(rlang)
 library(stats)
 library(tibble)
 library(tidyr)
+library(utils)
 library(vistime)
 
 knitr::opts_chunk$set(
