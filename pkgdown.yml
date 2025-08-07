@@ -4,7 +4,8 @@ pkgdown_sha: ~
 articles:
   course-materials: course-materials.html
   template-example: template-example.html
-last_built: 2025-08-06T21:20Z
+  template-KEYNOTE-598: template-KEYNOTE-598.html
+last_built: 2025-08-07T22:54Z
 urls:
   reference: https://ytymofyeyev.github.io/appendMCP/reference
   article: https://ytymofyeyev.github.io/appendMCP/articles

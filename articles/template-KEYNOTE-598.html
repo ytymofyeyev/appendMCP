@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>template-example • appendMCP</title>
+<title>template-KEYNOTE-598 • appendMCP</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -15,7 +15,7 @@
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="template-example">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="template-KEYNOTE-598">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -57,24 +57,29 @@
 
 
 
-<script src="template-example_files/kePrint-0.0.1/kePrint.js"></script><link href="template-example_files/lightable-0.0.1/lightable.css" rel="stylesheet">
+<script src="template-KEYNOTE-598_files/kePrint-0.0.1/kePrint.js"></script><link href="template-KEYNOTE-598_files/lightable-0.0.1/lightable.css" rel="stylesheet">
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>template-example</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>template-KEYNOTE-598</h1>
             
       
 
-      <div class="d-none name"><code>template-example.Rmd</code></div>
+      <div class="d-none name"><code>template-KEYNOTE-598.Rmd</code></div>
     </div>
 
     
     
+<p>KEYNOTE-598 study investigated whether addition of ipilimumab to
+pembro-mono improves efficacy</p>
+<p>See <a href="https://doi.org/10.1200/JCO.20.03579" class="external-link">Boyer et
+al. (2021)</a> for the primary results, where the protocol is also
+available For further information, see <a href="https://clinicaltrials.gov/study/NCT03302234" class="external-link">NCT03302234</a></p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">######### &lt;&lt; START INPUT &gt;&gt; ####################################################</span></span>
 <span></span>
-<span><span class="co">##### 1. Global parameters</span></span>
+<span><span class="co">##### 0. Global parameters</span></span>
 <span><span class="co"># Number of hypotheses included in the testing strategy with FWER control</span></span>
-<span><span class="va">numHyp</span>        <span class="op">&lt;-</span> <span class="fl">4</span></span>
+<span><span class="va">numHyp</span>        <span class="op">&lt;-</span> <span class="fl">3</span></span>
 <span><span class="co"># Allowed one-sided FWER</span></span>
 <span><span class="va">alphaTotal</span>    <span class="op">&lt;-</span> <span class="fl">0.025</span></span>
 <span><span class="co"># Number of digits to report for p-value boundaries</span></span>
@@ -86,99 +91,92 @@
 <span><span class="co"># Time limit in plot</span></span>
 <span><span class="va">Tmax_atPlot</span>   <span class="op">&lt;-</span> <span class="fl">60</span></span>
 <span><span class="co"># Study specific parameter for multiple testing procedure</span></span>
-<span><span class="va">mtParam</span>       <span class="op">&lt;-</span> <span class="fl">0.4</span></span>
+<span><span class="va">mtParam</span>       <span class="op">&lt;-</span> <span class="fl">0.999</span></span>
 <span></span>
-<span><span class="co">##### 2. Enrollment</span></span>
-<span><span class="co"># (This is aux to define enrollment per hypothesis below, might need enrollment</span></span>
-<span><span class="co"># per hypothesis for sub-population analysis)</span></span>
+<span><span class="co">##### 1. Enrollment</span></span>
+<span><span class="co"># Overall study enrollment rate object</span></span>
 <span><span class="va">enrollmentAll</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>stratum  <span class="op">=</span> <span class="st">"All"</span>,</span>
-<span>                                duration <span class="op">=</span> <span class="fl">250</span><span class="op">*</span><span class="fl">2</span><span class="op">/</span><span class="fl">25</span>,</span>
-<span>                                rate     <span class="op">=</span> <span class="fl">25</span><span class="op">)</span></span>
+<span>                                duration <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>                                rate     <span class="op">=</span> <span class="fl">568</span><span class="op">/</span><span class="fl">20</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co">##### 3. Main input tibble</span></span>
+<span><span class="co">##### 2-4. Main input tibble: Hypotheses, analyses, and distributional</span></span>
+<span><span class="co">##### information</span></span>
 <span><span class="co"># One row per hypothesis</span></span>
-<span><span class="va">inputD</span>        <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
+<span><span class="va">hypotheses</span>    <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
 <span>  <span class="co"># Hypothesis IDs</span></span>
 <span>  id            <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"H"</span>, <span class="fl">1</span><span class="op">:</span><span class="va">numHyp</span><span class="op">)</span>,</span>
-<span>  <span class="co"># Hypothesis tags, used in graph and output tables</span></span>
-<span>  tag           <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"PFS B+"</span>, <span class="st">"PFS"</span>, <span class="st">"ORR"</span>, <span class="st">"PRO"</span><span class="op">)</span>,</span>
-<span>  <span class="co"># The fields 'regimen', 'ep', and 'suffix' are pasted together into 'descr'</span></span>
-<span>  <span class="co"># field for the table defining hypotheses, 'tblInput'</span></span>
-<span>  regimen       <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"DrugX"</span> , each <span class="op">=</span> <span class="va">numHyp</span><span class="op">)</span>,</span>
-<span>  ep            <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"PFS"</span>, <span class="st">"PFS"</span>, <span class="st">"ORR"</span>, <span class="st">"PRO"</span><span class="op">)</span>,</span>
-<span>  suffix        <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"BM+"</span>, <span class="st">"all"</span>, <span class="st">"all"</span>, <span class="st">"all"</span><span class="op">)</span>, <span class="co"># E.g., for subgroups</span></span>
+<span>  <span class="co"># Hypothesis 'tags', used in graph and output tables</span></span>
+<span>  tag           <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"OS"</span>, <span class="st">"PFS"</span>, <span class="st">"ORR"</span><span class="op">)</span>,</span>
+<span>  <span class="co"># The fields 'regimen', 'ep', and 'suffix' can be pasted together internally</span></span>
+<span>  <span class="co"># into a description field for the output table defining hypotheses</span></span>
+<span>  regimen       <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"Pembro"</span>, <span class="va">numHyp</span><span class="op">)</span>,</span>
+<span>  ep            <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"OS"</span>, <span class="st">"PFS"</span>, <span class="st">"ORR"</span><span class="op">)</span>,</span>
+<span>  suffix        <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="va">numHyp</span><span class="op">)</span>, <span class="co"># E.g., for subgroups</span></span>
 <span>  <span class="co"># Type of hypothesis (primary or secondary)</span></span>
-<span>  type          <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"primary"</span>, <span class="st">"primary"</span>, <span class="st">"secondary"</span>, <span class="st">"secondary"</span><span class="op">)</span>,</span>
+<span>  type          <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"primary"</span>, <span class="st">"primary"</span>, <span class="st">"secondary"</span><span class="op">)</span>,</span>
 <span>  <span class="co"># initial weights in graphical multiple testing procedure</span></span>
-<span>  w             <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,</span>
+<span>  w             <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.019</span>, <span class="fl">0.006</span>, <span class="fl">0</span><span class="op">)</span><span class="op">/</span><span class="fl">0.025</span>,</span>
 <span>  <span class="co"># Spending functions; use NULL if no group sequential test for Hi</span></span>
 <span>  grSeqTesting  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>    H1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sfu <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://keaven.github.io/gsDesign/reference/sfPower.html" class="external-link">sfPower</a></span>, sfupar <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
-<span>    H2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sfu <span class="op">=</span> <span class="va">sfPower</span>, sfupar <span class="op">=</span> <span class="fl">2</span>, nominal <span class="op">=</span> <span class="fl">0.0001</span><span class="op">)</span>, </span>
-<span>    H3 <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>    H4 <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>    H1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sfu <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://keaven.github.io/gsDesign/reference/sfLDOF.html" class="external-link">sfLDOF</a></span><span class="op">)</span>,</span>
+<span>    H2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sfu <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://keaven.github.io/gsDesign/reference/sfLDOF.html" class="external-link">sfLDOF</a></span><span class="op">)</span>, </span>
+<span>    H3 <span class="op">=</span> <span class="cn">NULL</span></span>
 <span>  <span class="op">)</span>,</span>
-<span>  <span class="co"># 'iaSpec' and 'hypN' are uses to derive the information fractions, 'infoFr',</span></span>
-<span>  <span class="co"># and timing,'iaTiming' (calendar time since study start), for the analyses</span></span>
+<span>  <span class="co"># 'iaSpec' and 'hypN' are used to derive the information fractions and timing</span></span>
+<span>  <span class="co"># (calendar time since study start) of the analyses.</span></span>
 <span>  <span class="co"># For each hypothesis, set criteria that trigger analyses through</span></span>
 <span>  <span class="co"># list(A1_list, A2_list, ..., Aj_list), where</span></span>
-<span>  <span class="co"># Aj_list = list(H = 1, atIF = 0.5) means that for that hypothesis analysis</span></span>
-<span>  <span class="co"># j takes place when H1 is at 0.5 information fraction</span></span>
+<span>  <span class="co"># Aj_list = list(H = 1, atIF = 0.5) means that hypothesis analysis j takes</span></span>
+<span>  <span class="co"># place when H1 is at 0.5 information fraction</span></span>
 <span>  iaSpec        <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>A1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>H <span class="op">=</span> <span class="fl">2</span>, atIF <span class="op">=</span> <span class="fl">0.70</span><span class="op">)</span>, A2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>H <span class="op">=</span> <span class="fl">2</span>, atIF <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>A1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>H <span class="op">=</span> <span class="fl">2</span>, atIF <span class="op">=</span> <span class="fl">0.70</span><span class="op">)</span>,</span>
-<span>         A2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>H <span class="op">=</span> <span class="fl">2</span>, atIF <span class="op">=</span> <span class="fl">0.85</span><span class="op">)</span>,</span>
-<span>         A3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>H <span class="op">=</span> <span class="fl">2</span>, atIF <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>A1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>H <span class="op">=</span> <span class="fl">2</span>, atIF <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>A1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>H <span class="op">=</span> <span class="fl">2</span>, atIF <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>A1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>H <span class="op">=</span> <span class="fl">1</span>, atIF <span class="op">=</span> <span class="fl">255</span><span class="op">/</span><span class="fl">361</span><span class="op">)</span>,</span>
+<span>         A2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>H <span class="op">=</span> <span class="fl">1</span>, atIF <span class="op">=</span> <span class="fl">307</span><span class="op">/</span><span class="fl">361</span><span class="op">)</span>,</span>
+<span>         A3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>H <span class="op">=</span> <span class="fl">1</span>, atIF <span class="op">=</span> <span class="fl">361</span><span class="op">/</span><span class="fl">361</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>A1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>H <span class="op">=</span> <span class="fl">1</span>, atIF <span class="op">=</span> <span class="fl">255</span><span class="op">/</span><span class="fl">361</span><span class="op">)</span>,</span>
+<span>         A2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>H <span class="op">=</span> <span class="fl">1</span>, atIF <span class="op">=</span> <span class="fl">307</span><span class="op">/</span><span class="fl">361</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>A1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>H <span class="op">=</span> <span class="fl">1</span>, atIF <span class="op">=</span> <span class="fl">255</span><span class="op">/</span><span class="fl">361</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="op">)</span>,</span>
-<span>  <span class="co"># Set total information, N, for a given hypothesis (sample size or events);</span></span>
-<span>  <span class="co"># leave NA if 'enrollment' and 'iaSpec' would define N</span></span>
-<span>  hypN          <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">350</span>, <span class="cn">NA</span>, <span class="cn">NA</span><span class="op">)</span>,</span>
-<span>  <span class="co"># In some cases, would need to define 'infoFr' and 'iaTime' explicitly</span></span>
+<span>  <span class="co"># Set total N for each hypothesis (sample size or events); leave NA if</span></span>
+<span>  <span class="co"># 'enrollment' and 'iaSpec' would define N</span></span>
+<span>  hypN          <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">361</span>, <span class="cn">NA</span>, <span class="cn">NA</span><span class="op">)</span>,</span>
+<span>  <span class="co"># In some cases, we may would need to define 'infoFr' and 'iaTime' explicitly</span></span>
 <span>  <span class="co"># infoFr        = list(),</span></span>
 <span>  <span class="co"># Calendar time of analysis</span></span>
 <span>  <span class="co"># iaTime        =  list(),</span></span>
 <span>  <span class="co"># To define hypothesis test statistics Zi ~ N(., 1), use 'endpointParam'</span></span>
 <span>  <span class="co"># Class of 'endpointParam' is used to derive effect delta and standardized</span></span>
 <span>  <span class="co"># effect. Standardized effect size is used for power calculations. Several</span></span>
-<span>  <span class="co"># options are available to set test for binary endpoints.</span></span>
+<span>  <span class="co"># options are available to set the test for binary endpoints</span></span>
 <span>  endpointParam <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/structure.html" class="external-link">structure</a></span><span class="op">(</span></span>
 <span>      <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>        p1            <span class="op">=</span> <span class="fl">0.60</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">/</span><span class="fl">10</span>,</span>
-<span>        p2            <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">/</span><span class="fl">10</span>,</span>
-<span>        dropoutHazard <span class="op">=</span> <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="fl">0.05</span><span class="op">)</span><span class="op">/</span><span class="fl">12</span></span>
+<span>        p1            <span class="op">=</span> <span class="fl">0.70</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">/</span><span class="fl">20</span>,</span>
+<span>        p2            <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">/</span><span class="fl">20</span>,</span>
+<span>        dropoutHazard <span class="op">=</span> <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="fl">0.01</span><span class="op">)</span><span class="op">/</span><span class="fl">12</span></span>
 <span>      <span class="op">)</span>,</span>
 <span>      class <span class="op">=</span> <span class="st">"tte_exp"</span></span>
 <span>    <span class="op">)</span>,</span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/structure.html" class="external-link">structure</a></span><span class="op">(</span></span>
 <span>      <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>        p1            <span class="op">=</span> <span class="fl">0.70</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">/</span><span class="fl">15</span>,</span>
-<span>        p2            <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">/</span><span class="fl">15</span>,</span>
-<span>        dropoutHazard <span class="op">=</span> <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="fl">0.05</span><span class="op">)</span><span class="op">/</span><span class="fl">12</span></span>
+<span>        p1            <span class="op">=</span> <span class="fl">0.69</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">6.5</span>, <span class="fl">14.5</span><span class="op">)</span>,</span>
+<span>        p2            <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">6.5</span>, <span class="fl">14.5</span><span class="op">)</span>,</span>
+<span>        durations     <span class="op">=</span> <span class="fl">6.5</span>,</span>
+<span>        dropoutHazard <span class="op">=</span> <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="fl">0.13</span><span class="op">)</span><span class="op">/</span><span class="fl">12</span></span>
 <span>      <span class="op">)</span>,</span>
-<span>      class <span class="op">=</span> <span class="st">"tte_exp"</span></span>
+<span>      class <span class="op">=</span> <span class="st">"tte_pwe"</span></span>
 <span>    <span class="op">)</span>,</span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/structure.html" class="external-link">structure</a></span><span class="op">(</span></span>
 <span>      <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>        p1            <span class="op">=</span> <span class="fl">0.85</span>,</span>
-<span>        p2            <span class="op">=</span> <span class="fl">0.70</span>,</span>
+<span>        p1            <span class="op">=</span> <span class="fl">0.59</span>,</span>
+<span>        p2            <span class="op">=</span> <span class="fl">0.39</span>,</span>
 <span>        maturityTime  <span class="op">=</span> <span class="fl">6</span></span>
 <span>        <span class="op">)</span>,</span>
-<span>      class <span class="op">=</span> <span class="st">"binomial_pooled"</span><span class="op">)</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/structure.html" class="external-link">structure</a></span><span class="op">(</span></span>
-<span>      <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>        p1            <span class="op">=</span> <span class="fl">0.45</span>,</span>
-<span>        p2            <span class="op">=</span> <span class="fl">0.10</span>,</span>
-<span>        maturityTime  <span class="op">=</span> <span class="fl">3</span></span>
-<span>        <span class="op">)</span>,</span>
-<span>      class <span class="op">=</span> <span class="st">"normal"</span><span class="op">)</span></span>
+<span>      class <span class="op">=</span> <span class="st">"binomial_pooled"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  <span class="co"># Allocation ratio; trt/control</span></span>
 <span>  allocRatio    <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  <span class="co"># Prevalence of the hypotheses</span></span>
-<span>  prevalence    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.66</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>  prevalence    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>,</span>
 <span>  <span class="co"># Compute enrollment to each hypothesis using its prevalence and the</span></span>
 <span>  <span class="co"># previously set enrollment information</span></span>
 <span>  enrollment    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">prevalence</span>, <span class="kw">function</span><span class="op">(</span><span class="va">a</span><span class="op">)</span> <span class="op">{</span></span>
@@ -186,28 +184,27 @@
 <span>  <span class="op">}</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co">##### 4. Define graphical testing procedure</span></span>
+<span><span class="co">##### 5. Define graphical testing procedure</span></span>
 <span><span class="va">graphProc</span>     <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">s</span>, <span class="va">hypNames</span> <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="co"># s - split parameter</span></span>
 <span>  <span class="va">m</span>             <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">numHyp</span>, <span class="va">numHyp</span><span class="op">)</span></span>
-<span>  <span class="va">m</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">]</span>       <span class="op">&lt;-</span>  <span class="fl">1</span></span>
+<span>  <span class="va">m</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">]</span>       <span class="op">&lt;-</span> <span class="va">s</span></span>
+<span>  <span class="va">m</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">]</span>       <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">-</span> <span class="va">s</span></span>
+<span>  <span class="va">m</span><span class="op">[</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">]</span>       <span class="op">&lt;-</span> <span class="va">s</span></span>
 <span>  <span class="va">m</span><span class="op">[</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">]</span>       <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">-</span> <span class="va">s</span></span>
-<span>  <span class="va">m</span><span class="op">[</span><span class="fl">2</span>, <span class="fl">4</span><span class="op">]</span>       <span class="op">&lt;-</span> <span class="va">s</span></span>
-<span>  <span class="va">m</span><span class="op">[</span><span class="fl">3</span>, <span class="fl">4</span><span class="op">]</span>       <span class="op">&lt;-</span> <span class="fl">1</span></span>
-<span>  <span class="va">m</span><span class="op">[</span><span class="fl">4</span>, <span class="fl">3</span><span class="op">]</span>       <span class="op">&lt;-</span> <span class="fl">1</span></span>
+<span>  <span class="va">m</span><span class="op">[</span><span class="fl">3</span>, <span class="fl">2</span><span class="op">]</span>       <span class="op">&lt;-</span> <span class="fl">1</span></span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">hypNames</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">hypNames</span></span>
 <span>  <span class="op">}</span></span>
-<span>  <span class="fu">new</span><span class="op">(</span><span class="st">"graphMCP"</span>, m <span class="op">=</span> <span class="va">m</span>, weights <span class="op">=</span> <span class="va">inputD</span><span class="op">$</span><span class="va">w</span><span class="op">)</span></span>
+<span>  <span class="fu">new</span><span class="op">(</span><span class="st">"graphMCP"</span>, m <span class="op">=</span> <span class="va">m</span>, weights <span class="op">=</span> <span class="va">hypotheses</span><span class="op">$</span><span class="va">w</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="va">G</span>             <span class="op">&lt;-</span> <span class="fu">graphProc</span><span class="op">(</span><span class="va">mtParam</span>,</span>
-<span>                           hypNames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">inputD</span><span class="op">$</span><span class="va">id</span>, <span class="va">inputD</span><span class="op">$</span><span class="va">tag</span>, sep <span class="op">=</span> <span class="st">": "</span><span class="op">)</span><span class="op">)</span></span>
+<span>                           hypNames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">hypotheses</span><span class="op">$</span><span class="va">id</span>, <span class="va">hypotheses</span><span class="op">$</span><span class="va">tag</span>, sep <span class="op">=</span> <span class="st">": "</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">##### 5. Depict the graphical testing procedure (refer to ?gMCPLite::hGraph)</span></span>
 <span><span class="va">graphFigure</span>   <span class="op">&lt;-</span> <span class="fu">gMCPLite</span><span class="fu">::</span><span class="fu"><a href="https://merck.github.io/gMCPLite/reference/hGraph.html" class="external-link">hGraph</a></span><span class="op">(</span></span>
 <span>  nHypotheses     <span class="op">=</span> <span class="va">numHyp</span>,</span>
-<span>  nameHypotheses  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">inputD</span><span class="op">$</span><span class="va">id</span>, <span class="va">inputD</span><span class="op">$</span><span class="va">tag</span>, sep <span class="op">=</span> <span class="st">": "</span><span class="op">)</span>,</span>
-<span>  legend.name     <span class="op">=</span> <span class="st">"Color scheme"</span>,</span>
+<span>  nameHypotheses  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">hypotheses</span><span class="op">$</span><span class="va">id</span>, <span class="va">hypotheses</span><span class="op">$</span><span class="va">tag</span>, sep <span class="op">=</span> <span class="st">": "</span><span class="op">)</span>,</span>
 <span>  <span class="co">#labels          = c("Regimen1", "Regimen2"),</span></span>
 <span>  <span class="co">#legend.position = c(.5, 0.2),</span></span>
 <span>  <span class="co">#fill            = rep(1:2, each = numHyp/2),</span></span>
@@ -221,8 +218,8 @@
 <span>  boxtextsize     <span class="op">=</span> <span class="fl">3.5</span>,</span>
 <span>  trdigits        <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  <span class="co"># relative position of plots on MT graph</span></span>
-<span>  x               <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span>, <span class="fl">2</span>, <span class="fl">4</span><span class="op">)</span>,</span>
-<span>  y               <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span>, <span class="op">-</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>,</span>
+<span>  x               <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>  y               <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>,</span>
 <span>  alphaHypotheses <span class="op">=</span> <span class="fu">gMCPLite</span><span class="fu">::</span><span class="fu"><a href="https://merck.github.io/gMCPLite/reference/graphMCP-class.html" class="external-link">getWeights</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span>,</span>
 <span>  m               <span class="op">=</span> <span class="fu">gMCPLite</span><span class="fu">::</span><span class="fu"><a href="https://merck.github.io/gMCPLite/reference/graphMCP-class.html" class="external-link">getMatrix</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span>,</span>
 <span>  wchar           <span class="op">=</span> <span class="st">"w"</span></span>
@@ -233,7 +230,7 @@
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
 <p>With a 20-month accrual period, the total sample size planned for the
-study is 500.</p>
+study is 568.</p>
 </div>
 <div class="section level2">
 <h2 id="multiplicity-adjustment">Multiplicity Adjustment<a class="anchor" aria-label="anchor" href="#multiplicity-adjustment"></a>
@@ -252,12 +249,11 @@ representation</li>
 function methodology</li>
 </ul>
 <p>The multiplicity strategy will be applied to the 2 primary
-superiority hypotheses ( PFS B+ and PFS ) and 2 key secondary
-superiority hypotheses ( ORR and PRO ). Table @ref(tab:inputTable)
-summarizes the hypotheses specifying alpha-spending functions (for
-hypotheses to be tested group sequentially) together with the effect
-sizes and planned maximum statistical information (sample size or number
-of events).</p>
+superiority hypotheses ( OS and PFS ) and 1 key secondary superiority
+hypotheses ( ORR ). Table @ref(tab:inputTable) summarizes the hypotheses
+specifying alpha-spending functions (for hypotheses to be tested group
+sequentially) together with the effect sizes and planned maximum
+statistical information (sample size or number of events).</p>
 <table class="table table" style="margin-left: auto; margin-right: auto;border-bottom: 0;">
 <caption>
 Summary of Primary and Key Secondary Hypotheses
@@ -291,22 +287,22 @@ n<sup>†</sup>
 H1
 </td>
 <td style="text-align:left;">
-PFS B+
+OS
 </td>
 <td style="text-align:left;">
 primary
 </td>
 <td style="text-align:left;">
-1
+0.76
 </td>
 <td style="text-align:left;">
-Kim-DeMets (power), parameter = 2
+Lan-DeMets O’Brien-Fleming approximation
 </td>
 <td style="text-align:left;">
-HR = 0.60 (mCntl = 10.0 mo)
+HR = 0.70 (mCntl = 20.0 mo)
 </td>
 <td style="text-align:left;">
-263
+361
 </td>
 </tr>
 <tr>
@@ -320,16 +316,16 @@ PFS
 primary
 </td>
 <td style="text-align:left;">
-0
+0.24
 </td>
 <td style="text-align:left;">
-Nominal spend at IA 1, then Kim-DeMets (power), parameter = 2
+Lan-DeMets O’Brien-Fleming approximation
 </td>
 <td style="text-align:left;">
-HR = 0.70 (mCntl = 15.0 mo)
+HR = 0.69 (mCntl = 6.5 mo)
 </td>
 <td style="text-align:left;">
-350
+388
 </td>
 </tr>
 <tr>
@@ -343,39 +339,16 @@ ORR
 secondary
 </td>
 <td style="text-align:left;">
-0
+0.00
 </td>
 <td style="text-align:left;">
 No group sequential testing
 </td>
 <td style="text-align:left;">
-0.15 (85% vs 70%)
+0.20 (59% vs 39%)
 </td>
 <td style="text-align:left;">
-500
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-H4
-</td>
-<td style="text-align:left;">
-PRO
-</td>
-<td style="text-align:left;">
-secondary
-</td>
-<td style="text-align:left;">
-0
-</td>
-<td style="text-align:left;">
-No group sequential testing
-</td>
-<td style="text-align:left;">
-0
-</td>
-<td style="text-align:left;">
-500
+568
 </td>
 </tr>
 </tbody>
@@ -397,7 +370,7 @@ hazard ratio (HR) for TTE endpoints
 information projected to be available (in percentage relative to
 maximum) versus time since the trial start by the endpoint types. The
 vertical lines on the figure mark times on the interim analyses.</p>
-<p>The overall type I family-wise error rate for 4 hypotheses, over all
+<p>The overall type I family-wise error rate for 3 hypotheses, over all
 (interim and final) analyses, is controlled to 2.5% (one-sided).</p>
 <p>Figure @ref(fig:MTgraph) shows the graph where the hypotheses of
 interest are represented by the elliptical nodes. Each node has the
@@ -418,10 +391,10 @@ the destination node. This “alpha-propagation” results in a
 corresponding increase of the local significance level of the
 destination node. Figure @ref(fig:MTgraph) defines the initial
 configuration of the local significance levels and the directed edges
-(arrows). Particularly, the initial weight assignment for PFS BM+ is set
-to 1, respectively.</p>
+(arrows). Particularly, the initial weight assignment for OS all and PFS
+all is set to 0.76 and 0.24, respectively.</p>
 <div class="figure" style="text-align: center">
-<img src="template-example_files/figure-html/MTgraph-1.png" alt="Graph Depicting Multiple Hypothesis Testing Strategy." width="576"><p class="caption">
+<img src="template-KEYNOTE-598_files/figure-html/MTgraph-1.png" alt="Graph Depicting Multiple Hypothesis Testing Strategy." width="576"><p class="caption">
 Graph Depicting Multiple Hypothesis Testing Strategy.
 </p>
 </div>
@@ -469,48 +442,9 @@ Information Fraction
 </th>
 </tr></thead>
 <tbody>
-<tr grouplength="2">
-<td colspan="5" style="border-bottom: 1px solid;">
-<strong>H1 (PFS B+)</strong>
-</td>
-</tr>
-<tr>
-<td style="text-align:right;padding-left: 2em;" indentlevel="1">
-1
-</td>
-<td style="text-align:left;">
-H2 at information fraction 0.7
-</td>
-<td style="text-align:right;">
-28.93
-</td>
-<td style="text-align:right;">
-198
-</td>
-<td style="text-align:right;">
-0.75
-</td>
-</tr>
-<tr>
-<td style="text-align:right;padding-left: 2em;" indentlevel="1">
-2
-</td>
-<td style="text-align:left;">
-H2 at information fraction 1
-</td>
-<td style="text-align:right;">
-45.89
-</td>
-<td style="text-align:right;">
-263
-</td>
-<td style="text-align:right;">
-1.00
-</td>
-</tr>
 <tr grouplength="3">
 <td colspan="5" style="border-bottom: 1px solid;">
-<strong>H2 (PFS)</strong>
+<strong>H1 (OS)</strong>
 </td>
 </tr>
 <tr>
@@ -518,16 +452,16 @@ H2 at information fraction 1
 1
 </td>
 <td style="text-align:left;">
-H2 at information fraction 0.7
+H1 at information fraction 0.71
 </td>
 <td style="text-align:right;">
-28.93
+31.15
 </td>
 <td style="text-align:right;">
-245
+255
 </td>
 <td style="text-align:right;">
-0.70
+0.71
 </td>
 </tr>
 <tr>
@@ -535,13 +469,13 @@ H2 at information fraction 0.7
 2
 </td>
 <td style="text-align:left;">
-H2 at information fraction 0.85
+H1 at information fraction 0.85
 </td>
 <td style="text-align:right;">
-35.88
+37.64
 </td>
 <td style="text-align:right;">
-298
+307
 </td>
 <td style="text-align:right;">
 0.85
@@ -552,13 +486,52 @@ H2 at information fraction 0.85
 3
 </td>
 <td style="text-align:left;">
-H2 at information fraction 1
+H1 at information fraction 1
 </td>
 <td style="text-align:right;">
-45.89
+46.08
 </td>
 <td style="text-align:right;">
-350
+361
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+</tr>
+<tr grouplength="2">
+<td colspan="5" style="border-bottom: 1px solid;">
+<strong>H2 (PFS)</strong>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;padding-left: 2em;" indentlevel="1">
+1
+</td>
+<td style="text-align:left;">
+H1 at information fraction 0.71
+</td>
+<td style="text-align:right;">
+31.15
+</td>
+<td style="text-align:right;">
+356
+</td>
+<td style="text-align:right;">
+0.92
+</td>
+</tr>
+<tr>
+<td style="text-align:right;padding-left: 2em;" indentlevel="1">
+2
+</td>
+<td style="text-align:left;">
+H1 at information fraction 0.85
+</td>
+<td style="text-align:right;">
+37.64
+</td>
+<td style="text-align:right;">
+388
 </td>
 <td style="text-align:right;">
 1.00
@@ -574,35 +547,13 @@ H2 at information fraction 1
 1
 </td>
 <td style="text-align:left;">
-H2 at information fraction 1
+H1 at information fraction 0.71
 </td>
 <td style="text-align:right;">
-45.89
+31.15
 </td>
 <td style="text-align:right;">
-500
-</td>
-<td style="text-align:right;">
-1.00
-</td>
-</tr>
-<tr grouplength="1">
-<td colspan="5" style="border-bottom: 1px solid;">
-<strong>H4 (PRO)</strong>
-</td>
-</tr>
-<tr>
-<td style="text-align:right;padding-left: 2em;" indentlevel="1">
-1
-</td>
-<td style="text-align:left;">
-H2 at information fraction 1
-</td>
-<td style="text-align:right;">
-45.89
-</td>
-<td style="text-align:right;">
-500
+568
 </td>
 <td style="text-align:right;">
 1.00
@@ -634,21 +585,21 @@ Information Fraction
 </th>
 </tr></thead>
 <tbody>
-<tr grouplength="2">
+<tr grouplength="3">
 <td colspan="3" style="border-bottom: 1px solid;">
-<strong>Data cut-off #1, time = 28.9, Criteria: H2 at information
-fraction 0.7</strong>
+<strong>Data cut-off #1, time = 31.1, Criteria: H1 at information
+fraction 0.71</strong>
 </td>
 </tr>
 <tr>
 <td style="text-align:left;padding-left: 2em;" indentlevel="1">
-H1 (PFS B+)
+H1 (OS)
 </td>
 <td style="text-align:right;">
-198
+255
 </td>
 <td style="text-align:right;">
-0.75
+0.71
 </td>
 </tr>
 <tr>
@@ -656,55 +607,10 @@ H1 (PFS B+)
 H2 (PFS)
 </td>
 <td style="text-align:right;">
-245
+356
 </td>
 <td style="text-align:right;">
-0.70
-</td>
-</tr>
-<tr grouplength="1">
-<td colspan="3" style="border-bottom: 1px solid;">
-<strong>Data cut-off #2, time = 35.9, Criteria: H2 at information
-fraction 0.85</strong>
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-H2 (PFS)
-</td>
-<td style="text-align:right;">
-298
-</td>
-<td style="text-align:right;">
-0.85
-</td>
-</tr>
-<tr grouplength="4">
-<td colspan="3" style="border-bottom: 1px solid;">
-<strong>Data cut-off #3, time = 45.9, Criteria: H2 at information
-fraction 1</strong>
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-H1 (PFS B+)
-</td>
-<td style="text-align:right;">
-263
-</td>
-<td style="text-align:right;">
-1.00
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-H2 (PFS)
-</td>
-<td style="text-align:right;">
-350
-</td>
-<td style="text-align:right;">
-1.00
+0.92
 </td>
 </tr>
 <tr>
@@ -712,18 +618,52 @@ H2 (PFS)
 H3 (ORR)
 </td>
 <td style="text-align:right;">
-500
+568
 </td>
 <td style="text-align:right;">
 1.00
 </td>
 </tr>
+<tr grouplength="2">
+<td colspan="3" style="border-bottom: 1px solid;">
+<strong>Data cut-off #2, time = 37.6, Criteria: H1 at information
+fraction 0.85</strong>
+</td>
+</tr>
 <tr>
 <td style="text-align:left;padding-left: 2em;" indentlevel="1">
-H4 (PRO)
+H1 (OS)
 </td>
 <td style="text-align:right;">
-500
+307
+</td>
+<td style="text-align:right;">
+0.85
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+H2 (PFS)
+</td>
+<td style="text-align:right;">
+388
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+</tr>
+<tr grouplength="1">
+<td colspan="3" style="border-bottom: 1px solid;">
+<strong>Data cut-off #3, time = 46.1, Criteria: H1 at information
+fraction 1</strong>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+H1 (OS)
+</td>
+<td style="text-align:right;">
+361
 </td>
 <td style="text-align:right;">
 1.00
@@ -740,7 +680,7 @@ H4 (PRO)
 <div class="tab-pane" id="enrollment-and-data-availability-plot" role="tabpanel" aria-labelledby="enrollment-and-data-availability-plot-tab">
 
 <div class="figure" style="text-align: center">
-<img src="template-example_files/figure-html/timelinePlot-1.png" alt="Timelines." width="864"><p class="caption">
+<img src="template-KEYNOTE-598_files/figure-html/timelinePlot-1.png" alt="Timelines." width="864"><p class="caption">
 Timelines.
 </p>
 </div>
@@ -784,90 +724,118 @@ Testing Scenario
 </th>
 </tr></thead>
 <tbody>
-<tr grouplength="1">
+<tr grouplength="3">
 <td colspan="3" style="text-align: left;">
-<strong>H1: PFS B+</strong>
+<strong>H1: OS</strong>
 </td>
 </tr>
 <tr>
 <td style="text-align:right;padding-left: 2em;" indentlevel="1">
-0.025
+0.01900
 </td>
 <td style="text-align:right;">
-1.0
+0.76000
 </td>
 <td style="text-align:left;">
 Initial allocation
 </td>
 </tr>
-<tr grouplength="1">
+<tr>
+<td style="text-align:right;padding-left: 2em;" indentlevel="1">
+0.02499
+</td>
+<td style="text-align:right;">
+0.99976
+</td>
+<td style="text-align:left;">
+Successful H2
+</td>
+</tr>
+<tr>
+<td style="text-align:right;padding-left: 2em;" indentlevel="1">
+0.02500
+</td>
+<td style="text-align:right;">
+1.00000
+</td>
+<td style="text-align:left;">
+Successful H2, H3
+</td>
+</tr>
+<tr grouplength="3">
 <td colspan="3" style="text-align: left;">
 <strong>H2: PFS</strong>
 </td>
 </tr>
 <tr>
 <td style="text-align:right;padding-left: 2em;" indentlevel="1">
-0.025
+0.00600
 </td>
 <td style="text-align:right;">
-1.0
+0.24000
+</td>
+<td style="text-align:left;">
+Initial allocation
+</td>
+</tr>
+<tr>
+<td style="text-align:right;padding-left: 2em;" indentlevel="1">
+0.02498
+</td>
+<td style="text-align:right;">
+0.99924
 </td>
 <td style="text-align:left;">
 Successful H1
 </td>
 </tr>
-<tr grouplength="2">
+<tr>
+<td style="text-align:right;padding-left: 2em;" indentlevel="1">
+0.02500
+</td>
+<td style="text-align:right;">
+1.00000
+</td>
+<td style="text-align:left;">
+Successful H1, H3
+</td>
+</tr>
+<tr grouplength="3">
 <td colspan="3" style="text-align: left;">
 <strong>H3: ORR</strong>
 </td>
 </tr>
 <tr>
 <td style="text-align:right;padding-left: 2em;" indentlevel="1">
-0.015
+0.00001
 </td>
 <td style="text-align:right;">
-0.6
+0.00024
+</td>
+<td style="text-align:left;">
+Successful H2
+</td>
+</tr>
+<tr>
+<td style="text-align:right;padding-left: 2em;" indentlevel="1">
+0.00002
+</td>
+<td style="text-align:right;">
+0.00076
+</td>
+<td style="text-align:left;">
+Successful H1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;padding-left: 2em;" indentlevel="1">
+0.02500
+</td>
+<td style="text-align:right;">
+1.00000
 </td>
 <td style="text-align:left;">
 Successful H1, H2
-</td>
-</tr>
-<tr>
-<td style="text-align:right;padding-left: 2em;" indentlevel="1">
-0.025
-</td>
-<td style="text-align:right;">
-1.0
-</td>
-<td style="text-align:left;">
-Successful H1, H2, H4
-</td>
-</tr>
-<tr grouplength="2">
-<td colspan="3" style="text-align: left;">
-<strong>H4: PRO</strong>
-</td>
-</tr>
-<tr>
-<td style="text-align:right;padding-left: 2em;" indentlevel="1">
-0.010
-</td>
-<td style="text-align:right;">
-0.4
-</td>
-<td style="text-align:left;">
-Successful H1, H2
-</td>
-</tr>
-<tr>
-<td style="text-align:right;padding-left: 2em;" indentlevel="1">
-0.025
-</td>
-<td style="text-align:right;">
-1.0
-</td>
-<td style="text-align:left;">
-Successful H1, H2, H3
 </td>
 </tr>
 </tbody>
@@ -914,70 +882,162 @@ Power
 </th>
 </tr></thead>
 <tbody>
-<tr grouplength="1">
+<tr grouplength="3">
 <td colspan="7" style="text-align: left;">
-<strong>H1: PFS B+</strong>
+<strong>H1: OS</strong>
 </td>
 </tr>
 <tr>
 <td style="text-align:center;padding-left: 2em;width: 3cm; text-decoration: underline;" indentlevel="1">
-0.025
+0.01900
 </td>
 <td style="text-align:center;">
-1<br>2
+1<br>2<br>3
 </td>
 <td style="text-align:center;">
-0.75<br>1
+0.71<br>0.85<br>1
 </td>
 <td style="text-align:center;">
-0.01406<br>0.01915
+0.00538<br>0.00938<br>0.01547
 </td>
 <td style="text-align:center;">
-0.02813<br>0.03831
+0.01075<br>0.01875<br>0.03094
 </td>
 <td style="text-align:center;">
-0.732<br>0.775
+0.727<br>0.765<br>0.797
 </td>
 <td style="text-align:center;">
-0.92<br>0.98
+0.62<br>0.79<br>0.9
 </td>
 </tr>
-<tr grouplength="1">
+<tr>
+<td style="text-align:center;padding-left: 2em;width: 3cm; text-decoration: underline;" indentlevel="1">
+0.02499
+</td>
+<td style="text-align:center;">
+1<br>2<br>3
+</td>
+<td style="text-align:center;">
+0.71<br>0.85<br>1
+</td>
+<td style="text-align:center;">
+0.00781<br>0.01277<br>0.02015
+</td>
+<td style="text-align:center;">
+0.01562<br>0.02555<br>0.0403
+</td>
+<td style="text-align:center;">
+0.739<br>0.775<br>0.806
+</td>
+<td style="text-align:center;">
+0.67<br>0.82<br>0.92
+</td>
+</tr>
+<tr>
+<td style="text-align:center;padding-left: 2em;width: 3cm; text-decoration: underline;" indentlevel="1">
+0.02500
+</td>
+<td style="text-align:center;">
+1<br>2<br>3
+</td>
+<td style="text-align:center;">
+0.71<br>0.85<br>1
+</td>
+<td style="text-align:center;">
+0.00781<br>0.01278<br>0.02016
+</td>
+<td style="text-align:center;">
+0.01563<br>0.02555<br>0.04031
+</td>
+<td style="text-align:center;">
+0.739<br>0.775<br>0.806
+</td>
+<td style="text-align:center;">
+0.67<br>0.82<br>0.92
+</td>
+</tr>
+<tr grouplength="3">
 <td colspan="7" style="text-align: left;">
 <strong>H2: PFS</strong>
 </td>
 </tr>
 <tr>
 <td style="text-align:center;padding-left: 2em;width: 3cm; text-decoration: underline;" indentlevel="1">
-0.025
+0.00600
 </td>
 <td style="text-align:center;">
-1<br>2<br>3
+1<br>2
 </td>
 <td style="text-align:center;">
-0.7<br>0.85<br>1
+0.92<br>1
 </td>
 <td style="text-align:center;">
-1e-04<br>0.01806<br>0.01821
+0.00417<br>0.00484
 </td>
 <td style="text-align:center;">
-2e-04<br>0.03612<br>0.03641
+0.00835<br>0.00968
 </td>
 <td style="text-align:center;">
-0.622<br>0.784<br>0.8
+0.756<br>0.769
 </td>
 <td style="text-align:center;">
-0.18<br>0.84<br>0.91
+0.81<br>0.87
 </td>
 </tr>
-<tr grouplength="2">
+<tr>
+<td style="text-align:center;padding-left: 2em;width: 3cm; text-decoration: underline;" indentlevel="1">
+0.02498
+</td>
+<td style="text-align:center;">
+1<br>2
+</td>
+<td style="text-align:center;">
+0.92<br>1
+</td>
+<td style="text-align:center;">
+0.01943<br>0.01979
+</td>
+<td style="text-align:center;">
+0.03886<br>0.03958
+</td>
+<td style="text-align:center;">
+0.804<br>0.811
+</td>
+<td style="text-align:center;">
+0.93<br>0.95
+</td>
+</tr>
+<tr>
+<td style="text-align:center;padding-left: 2em;width: 3cm; text-decoration: underline;" indentlevel="1">
+0.02500
+</td>
+<td style="text-align:center;">
+1<br>2
+</td>
+<td style="text-align:center;">
+0.92<br>1
+</td>
+<td style="text-align:center;">
+0.01945<br>0.0198
+</td>
+<td style="text-align:center;">
+0.0389<br>0.03961
+</td>
+<td style="text-align:center;">
+0.804<br>0.811
+</td>
+<td style="text-align:center;">
+0.93<br>0.95
+</td>
+</tr>
+<tr grouplength="3">
 <td colspan="7" style="text-align: left;">
 <strong>H3: ORR</strong>
 </td>
 </tr>
 <tr>
 <td style="text-align:center;padding-left: 2em;width: 3cm; text-decoration: underline;" indentlevel="1">
-0.015
+0.00001
 </td>
 <td style="text-align:center;">
 1
@@ -986,21 +1046,44 @@ Power
 1
 </td>
 <td style="text-align:center;">
-0.015
+1e-05
 </td>
 <td style="text-align:center;">
-0.03
+1e-05
 </td>
 <td style="text-align:center;">
-0.081
+0.184
 </td>
 <td style="text-align:center;">
-0.97
+0.65
 </td>
 </tr>
 <tr>
 <td style="text-align:center;padding-left: 2em;width: 3cm; text-decoration: underline;" indentlevel="1">
-0.025
+0.00002
+</td>
+<td style="text-align:center;">
+1
+</td>
+<td style="text-align:center;">
+1
+</td>
+<td style="text-align:center;">
+2e-05
+</td>
+<td style="text-align:center;">
+4e-05
+</td>
+<td style="text-align:center;">
+0.173
+</td>
+<td style="text-align:center;">
+0.74
+</td>
+</tr>
+<tr>
+<td style="text-align:center;padding-left: 2em;width: 3cm; text-decoration: underline;" indentlevel="1">
+0.02500
 </td>
 <td style="text-align:center;">
 1
@@ -1015,61 +1098,10 @@ Power
 0.05
 </td>
 <td style="text-align:center;">
-0.073
-</td>
-<td style="text-align:center;">
-0.98
-</td>
-</tr>
-<tr grouplength="2">
-<td colspan="7" style="text-align: left;">
-<strong>H4: PRO</strong>
-</td>
-</tr>
-<tr>
-<td style="text-align:center;padding-left: 2em;width: 3cm; text-decoration: underline;" indentlevel="1">
-0.010
+0.082
 </td>
 <td style="text-align:center;">
 1
-</td>
-<td style="text-align:center;">
-1
-</td>
-<td style="text-align:center;">
-0.01
-</td>
-<td style="text-align:center;">
-0.02
-</td>
-<td style="text-align:center;">
-0.208
-</td>
-<td style="text-align:center;">
-0.94
-</td>
-</tr>
-<tr>
-<td style="text-align:center;padding-left: 2em;width: 3cm; text-decoration: underline;" indentlevel="1">
-0.025
-</td>
-<td style="text-align:center;">
-1
-</td>
-<td style="text-align:center;">
-1
-</td>
-<td style="text-align:center;">
-0.025
-</td>
-<td style="text-align:center;">
-0.05
-</td>
-<td style="text-align:center;">
-0.175
-</td>
-<td style="text-align:center;">
-0.97
 </td>
 </tr>
 </tbody>
@@ -1082,7 +1114,7 @@ by local significance levels available for hypotheses describing all
 potential scenarios needed during an execution of the multiple testing
 procedure.</p>
 <div class="figure">
-<img src="template-example_files/figure-html/plotSF-1.png" alt="Alpha-spending functions" width="960"><p class="caption">
+<img src="template-KEYNOTE-598_files/figure-html/plotSF-1.png" alt="Alpha-spending functions" width="960"><p class="caption">
 Alpha-spending functions
 </p>
 </div>

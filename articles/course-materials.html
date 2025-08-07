@@ -40,6 +40,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/course-materials.html">Course materials</a></li>
     <li><a class="dropdown-item" href="../articles/template-example.html">template-example</a></li>
+    <li><a class="dropdown-item" href="../articles/template-KEYNOTE-598.html">template-KEYNOTE-598</a></li>
   </ul>
 </li>
       </ul>
@@ -80,22 +81,22 @@ Use numerical solvers, e.g., <code><a href="https://rdrr.io/r/stats/nlminb.html"
 <p><strong>Exercise:</strong></p>
 <ul>
 <li><p>Explore how the optimal parameter changes for a 3-stage design
-with IA analyses at 0.25 and 0.75 information fractions.</p></li>
-<li><p>Compare the expected number of subjects (<code>N</code>) to that
-of an equally spaced 3-stage design.</p></li>
+with respect to different alpha, beta and timing of analysis.</p></li>
+<li><p>Find an optimal WT boundary for OS using KEYNOTE-598 study
+setting</p></li>
 </ul>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://keaven.github.io/gsDesign/" class="external-link">gsDesign</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">opt_fun</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span></span>
 <span>    <span class="va">x</span>,                 <span class="co"># optimization parameter</span></span>
-<span>    <span class="va">timing</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">1</span><span class="op">)</span>, <span class="co"># timing of IAs</span></span>
-<span>    <span class="va">delta</span>  <span class="op">=</span> <span class="fl">1</span>,        <span class="co"># target effect size </span></span>
+<span>    <span class="va">timing</span>,            <span class="co"># timing of IAs</span></span>
+<span>    <span class="va">delta</span> ,            <span class="co"># target effect size </span></span>
 <span>    <span class="va">theta</span>,             <span class="co"># effect size vector for which to get expected value N</span></span>
 <span>    <span class="va">thetawgt</span>,          <span class="co"># corresponing weight</span></span>
-<span>    <span class="va">k</span> <span class="op">=</span> <span class="fl">2</span>,             <span class="co"># number of analysis</span></span>
-<span>    <span class="va">alpha</span> <span class="op">=</span> <span class="fl">0.025</span>,     <span class="co"># Type I </span></span>
-<span>    <span class="va">beta</span>  <span class="op">=</span> <span class="fl">0.1</span>,</span>
+<span>    <span class="va">k</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">timing</span><span class="op">)</span>,<span class="co"># number of analysis</span></span>
+<span>    <span class="va">alpha</span>,             <span class="co"># Type I </span></span>
+<span>    <span class="va">beta</span>,              <span class="co"># Type II</span></span>
 <span>    <span class="va">sfu</span> <span class="op">=</span> <span class="st">"WT"</span></span>
 <span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="co"># Derive design</span></span>
@@ -119,7 +120,10 @@ of an equally spaced 3-stage design.</p></li>
 <span><span class="op">}</span></span>
 <span></span>
 <span></span>
-<span><span class="va">effect_size_H1</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">0.60</span><span class="op">)</span><span class="op">/</span><span class="fl">2</span>  <span class="co"># standardized effect size under H1</span></span>
+<span><span class="va">effect_size_H1</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">0.70</span><span class="op">)</span><span class="op">/</span><span class="fl">2</span>  <span class="co"># standardized effect size under H1</span></span>
+<span><span class="va">beta_target</span>  <span class="op">&lt;-</span> <span class="fl">0.20</span></span>
+<span><span class="va">alpha_target</span> <span class="op">&lt;-</span> <span class="fl">0.025</span></span>
+<span><span class="va">IA_timing</span>    <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span><span class="op">/</span><span class="fl">3</span></span>
 <span></span>
 <span><span class="co"># Call optimizer </span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/nlminb.html" class="external-link">nlminb</a></span><span class="op">(</span></span>
@@ -127,9 +131,9 @@ of an equally spaced 3-stage design.</p></li>
 <span>  <span class="va">opt_fun</span>,            <span class="co"># function to optimize</span></span>
 <span>                      <span class="co"># other fixed parameters</span></span>
 <span>  k <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>  timing   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">/</span><span class="fl">3</span>,</span>
-<span>  alpha    <span class="op">=</span> <span class="fl">0.025</span>,</span>
-<span>  beta     <span class="op">=</span> <span class="fl">0.2</span>,</span>
+<span>  timing   <span class="op">=</span> <span class="va">IA_timing</span>,</span>
+<span>  alpha    <span class="op">=</span> <span class="va">alpha_target</span>,</span>
+<span>  beta     <span class="op">=</span> <span class="va">beta_target</span>,</span>
 <span>  delta    <span class="op">=</span> <span class="va">effect_size_H1</span>,  <span class="co"># effect size under alternative</span></span>
 <span>  theta    <span class="op">=</span> <span class="va">effect_size_H1</span>,  <span class="co"># to compute EN under H1</span></span>
 <span>  thetawgt <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -140,30 +144,30 @@ of an equally spaced 3-stage design.</p></li>
 <span></span>
 <span><span class="co"># optimization function value at optimal </span></span>
 <span><span class="va">x</span><span class="op">$</span><span class="va">objective</span></span>
-<span><span class="co">#&gt; [1] 97.66371</span></span>
-<span></span>
-<span><span class="co"># check the resulting GSD</span></span>
-<span><span class="fu"><a href="https://keaven.github.io/gsDesign/reference/gsDesign.html" class="external-link">gsDesign</a></span><span class="op">(</span></span>
+<span><span class="co">#&gt; [1] 200.3242</span></span></code></pre></div>
+<p>Design details:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://keaven.github.io/gsDesign/reference/gsDesign.html" class="external-link">gsDesign</a></span><span class="op">(</span></span>
 <span>  k <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  test.type <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  delta <span class="op">=</span> <span class="va">effect_size_H1</span>,</span>
-<span>  alpha <span class="op">=</span> <span class="fl">0.025</span>,</span>
-<span>  beta  <span class="op">=</span> <span class="fl">0.2</span>,</span>
-<span>  timing <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span><span class="op">/</span><span class="fl">3</span>,</span>
+<span>  alpha <span class="op">=</span> <span class="va">alpha_target</span>,</span>
+<span>  beta  <span class="op">=</span> <span class="va">beta_target</span>,</span>
+<span>  timing <span class="op">=</span> <span class="va">IA_timing</span>,</span>
 <span>  sfu <span class="op">=</span> <span class="st">"WT"</span>,</span>
-<span>  sfupar <span class="op">=</span> <span class="va">x</span><span class="op">$</span><span class="va">par</span>,</span>
+<span>  sfupar <span class="op">=</span> <span class="va">x</span><span class="op">$</span><span class="va">par</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; One-sided group sequential design with</span></span>
 <span><span class="co">#&gt; 80 % power and 2.5 % Type I Error.</span></span>
 <span><span class="co">#&gt;               </span></span>
 <span><span class="co">#&gt;   Analysis  N   Z   Nominal p  Spend</span></span>
-<span><span class="co">#&gt;          1  45 2.46    0.0070 0.0070</span></span>
-<span><span class="co">#&gt;          2  89 2.28    0.0114 0.0091</span></span>
-<span><span class="co">#&gt;          3 133 2.18    0.0148 0.0090</span></span>
+<span><span class="co">#&gt;          1  91 2.46    0.0070 0.0070</span></span>
+<span><span class="co">#&gt;          2 182 2.28    0.0114 0.0091</span></span>
+<span><span class="co">#&gt;          3 273 2.18    0.0148 0.0090</span></span>
 <span><span class="co">#&gt;      Total                    0.0250 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ++ alpha spending:</span></span>
-<span><span class="co">#&gt;  Wang-Tsiatis boundary with Delta = 0.38857702535515.</span></span>
+<span><span class="co">#&gt;  Wang-Tsiatis boundary with Delta = 0.388577023922542.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Boundary crossing probabilities and expected sample size</span></span>
 <span><span class="co">#&gt; assume any cross stops the trial</span></span>
@@ -171,8 +175,71 @@ of an equally spaced 3-stage design.</p></li>
 <span><span class="co">#&gt; Upper boundary (power or Type I Error)</span></span>
 <span><span class="co">#&gt;           Analysis</span></span>
 <span><span class="co">#&gt;    Theta      1      2      3 Total  E{N}</span></span>
-<span><span class="co">#&gt;   0.0000 0.0070 0.0091 0.0090 0.025 131.7</span></span>
-<span><span class="co">#&gt;   0.2554 0.2235 0.3452 0.2313 0.800  97.7</span></span></code></pre></div>
+<span><span class="co">#&gt;   0.0000 0.0070 0.0091 0.0090 0.025 270.1</span></span>
+<span><span class="co">#&gt;   0.1783 0.2235 0.3452 0.2313 0.800 200.3</span></span></code></pre></div>
+<p>Compare with WT(0.389)</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://keaven.github.io/gsDesign/reference/gsDesign.html" class="external-link">gsDesign</a></span><span class="op">(</span></span>
+<span>  k <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  test.type <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  delta <span class="op">=</span> <span class="va">effect_size_H1</span>,</span>
+<span>  alpha <span class="op">=</span> <span class="va">alpha_target</span>,</span>
+<span>  beta  <span class="op">=</span> <span class="va">beta_target</span>,</span>
+<span>  timing <span class="op">=</span> <span class="va">IA_timing</span>,</span>
+<span>  sfu <span class="op">=</span> <span class="st">"WT"</span>,</span>
+<span>  sfupar <span class="op">=</span> <span class="fl">0.389</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; One-sided group sequential design with</span></span>
+<span><span class="co">#&gt; 80 % power and 2.5 % Type I Error.</span></span>
+<span><span class="co">#&gt;               </span></span>
+<span><span class="co">#&gt;   Analysis  N   Z   Nominal p  Spend</span></span>
+<span><span class="co">#&gt;          1  91 2.46    0.0070 0.0070</span></span>
+<span><span class="co">#&gt;          2 182 2.28    0.0114 0.0091</span></span>
+<span><span class="co">#&gt;          3 273 2.18    0.0148 0.0090</span></span>
+<span><span class="co">#&gt;      Total                    0.0250 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ++ alpha spending:</span></span>
+<span><span class="co">#&gt;  Wang-Tsiatis boundary with Delta = 0.389.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Boundary crossing probabilities and expected sample size</span></span>
+<span><span class="co">#&gt; assume any cross stops the trial</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Upper boundary (power or Type I Error)</span></span>
+<span><span class="co">#&gt;           Analysis</span></span>
+<span><span class="co">#&gt;    Theta      1      2      3 Total  E{N}</span></span>
+<span><span class="co">#&gt;   0.0000 0.0070 0.0091 0.0090 0.025 270.2</span></span>
+<span><span class="co">#&gt;   0.1783 0.2238 0.3451 0.2311 0.800 200.3</span></span></code></pre></div>
+<p>Compare with a Lan-DeMets O’Brien-Fleming spending function</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://keaven.github.io/gsDesign/reference/gsDesign.html" class="external-link">gsDesign</a></span><span class="op">(</span></span>
+<span>  k <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  test.type <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  delta <span class="op">=</span> <span class="va">effect_size_H1</span>,</span>
+<span>  alpha <span class="op">=</span> <span class="va">alpha_target</span>,</span>
+<span>  beta  <span class="op">=</span> <span class="va">beta_target</span>,</span>
+<span>  timing <span class="op">=</span> <span class="va">IA_timing</span>,</span>
+<span>  sfu <span class="op">=</span> <span class="va">sfLDOF</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; One-sided group sequential design with</span></span>
+<span><span class="co">#&gt; 80 % power and 2.5 % Type I Error.</span></span>
+<span><span class="co">#&gt;               </span></span>
+<span><span class="co">#&gt;   Analysis  N   Z   Nominal p  Spend</span></span>
+<span><span class="co">#&gt;          1  84 3.71    0.0001 0.0001</span></span>
+<span><span class="co">#&gt;          2 167 2.51    0.0060 0.0059</span></span>
+<span><span class="co">#&gt;          3 250 1.99    0.0231 0.0190</span></span>
+<span><span class="co">#&gt;      Total                    0.0250 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ++ alpha spending:</span></span>
+<span><span class="co">#&gt;  Lan-DeMets O'Brien-Fleming approximation spending function (no parameters).</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Boundary crossing probabilities and expected sample size</span></span>
+<span><span class="co">#&gt; assume any cross stops the trial</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Upper boundary (power or Type I Error)</span></span>
+<span><span class="co">#&gt;           Analysis</span></span>
+<span><span class="co">#&gt;    Theta      1      2      3 Total  E{N}</span></span>
+<span><span class="co">#&gt;   0.0000 0.0001 0.0059 0.0190 0.025 249.4</span></span>
+<span><span class="co">#&gt;   0.1783 0.0186 0.3988 0.3826 0.800 213.6</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
