@@ -1,13 +1,20 @@
 ---
-title: "template-example"
+title: "template-KEYNOTE-598"
 output: bookdown::html_vignette2
 vignette: >
-  %\VignetteIndexEntry{template-example}
+  %\VignetteIndexEntry{template-KEYNOTE-598}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r setup, include=FALSE}
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, include = FALSE}
 library(appendMCP)
 library(bookdown)
 library(dplyr)
@@ -40,12 +47,18 @@ knitr::opts_chunk$set(
 options(width = 58)
 ```
 
+KEYNOTE-598 study investigated whether addition of ipilimumab to pembro-mono improves efficacy
+
+See [Boyer et al. (2021)](https://doi.org/10.1200/JCO.20.03579) for the primary results, where the protocol is also available
+For further information, see [NCT03302234](https://clinicaltrials.gov/study/NCT03302234)
+
+
 ```{r input, fig.height=5, fig.width=5, fig.align="center"}
 ######### << START INPUT >> ####################################################
 
-##### 1. Global parameters
+##### 0. Global parameters
 # Number of hypotheses included in the testing strategy with FWER control
-numHyp        <- 4
+numHyp        <- 3
 # Allowed one-sided FWER
 alphaTotal    <- 0.025
 # Number of digits to report for p-value boundaries
@@ -57,99 +70,92 @@ plotInPercent <- FALSE
 # Time limit in plot
 Tmax_atPlot   <- 60
 # Study specific parameter for multiple testing procedure
-mtParam       <- 0.4
+mtParam       <- 0.999
 
-##### 2. Enrollment
-# (This is aux to define enrollment per hypothesis below, might need enrollment
-# per hypothesis for sub-population analysis)
+##### 1. Enrollment
+# Overall study enrollment rate object
 enrollmentAll <- tibble::tibble(stratum  = "All",
-                                duration = 250*2/25,
-                                rate     = 25)
+                                duration = 20,
+                                rate     = 568/20)
 
-##### 3. Main input tibble
+##### 2-4. Main input tibble: Hypotheses, analyses, and distributional
+##### information
 # One row per hypothesis
-inputD        <- tibble::tibble(
+hypotheses    <- tibble::tibble(
   # Hypothesis IDs
   id            = paste0("H", 1:numHyp),
-  # Hypothesis tags, used in graph and output tables
-  tag           = c("PFS B+", "PFS", "ORR", "PRO"),
-  # The fields 'regimen', 'ep', and 'suffix' are pasted together into 'descr'
-  # field for the table defining hypotheses, 'tblInput'
-  regimen       = rep("DrugX" , each = numHyp),
-  ep            = c("PFS", "PFS", "ORR", "PRO"),
-  suffix        = c("BM+", "all", "all", "all"), # E.g., for subgroups
+  # Hypothesis 'tags', used in graph and output tables
+  tag           = c("OS", "PFS", "ORR"),
+  # The fields 'regimen', 'ep', and 'suffix' can be pasted together internally
+  # into a description field for the output table defining hypotheses
+  regimen       = rep("Pembro", numHyp),
+  ep            = c("OS", "PFS", "ORR"),
+  suffix        = rep("all", numHyp), # E.g., for subgroups
   # Type of hypothesis (primary or secondary)
-  type          = c("primary", "primary", "secondary", "secondary"),
+  type          = c("primary", "primary", "secondary"),
   # initial weights in graphical multiple testing procedure
-  w             = c(1, 0, 0, 0),
+  w             = c(0.019, 0.006, 0)/0.025,
   # Spending functions; use NULL if no group sequential test for Hi
   grSeqTesting  = list(
-    H1 = list(sfu = gsDesign::sfPower, sfupar = 2),
-    H2 = list(sfu = sfPower, sfupar = 2, nominal = 0.0001), 
-    H3 = NULL,
-    H4 = NULL
+    H1 = list(sfu = gsDesign::sfLDOF),
+    H2 = list(sfu = gsDesign::sfLDOF), 
+    H3 = NULL
   ),
-  # 'iaSpec' and 'hypN' are uses to derive the information fractions, 'infoFr',
-  # and timing,'iaTiming' (calendar time since study start), for the analyses
+  # 'iaSpec' and 'hypN' are used to derive the information fractions and timing
+  # (calendar time since study start) of the analyses.
   # For each hypothesis, set criteria that trigger analyses through
   # list(A1_list, A2_list, ..., Aj_list), where
-  # Aj_list = list(H = 1, atIF = 0.5) means that for that hypothesis analysis
-  # j takes place when H1 is at 0.5 information fraction
+  # Aj_list = list(H = 1, atIF = 0.5) means that hypothesis analysis j takes
+  # place when H1 is at 0.5 information fraction
   iaSpec        = list(
-    list(A1 = list(H = 2, atIF = 0.70), A2 = list(H = 2, atIF = 1)),
-    list(A1 = list(H = 2, atIF = 0.70),
-         A2 = list(H = 2, atIF = 0.85),
-         A3 = list(H = 2, atIF = 1)),
-    list(A1 = list(H = 2, atIF = 1)),
-    list(A1 = list(H = 2, atIF = 1))
+    list(A1 = list(H = 1, atIF = 255/361),
+         A2 = list(H = 1, atIF = 307/361),
+         A3 = list(H = 1, atIF = 361/361)),
+    list(A1 = list(H = 1, atIF = 255/361),
+         A2 = list(H = 1, atIF = 307/361)),
+    list(A1 = list(H = 1, atIF = 255/361))
   ),
-  # Set total information, N, for a given hypothesis (sample size or events);
-  # leave NA if 'enrollment' and 'iaSpec' would define N
-  hypN          = c(NA, 350, NA, NA),
-  # In some cases, would need to define 'infoFr' and 'iaTime' explicitly
+  # Set total N for each hypothesis (sample size or events); leave NA if
+  # 'enrollment' and 'iaSpec' would define N
+  hypN          = c(361, NA, NA),
+  # In some cases, we may would need to define 'infoFr' and 'iaTime' explicitly
   # infoFr        = list(),
   # Calendar time of analysis
   # iaTime        =  list(),
   # To define hypothesis test statistics Zi ~ N(., 1), use 'endpointParam'
   # Class of 'endpointParam' is used to derive effect delta and standardized
   # effect. Standardized effect size is used for power calculations. Several
-  # options are available to set test for binary endpoints.
+  # options are available to set the test for binary endpoints
   endpointParam = list(
     structure(
       list(
-        p1            = 0.60*log(2)/10,
-        p2            = log(2)/10,
-        dropoutHazard = -log(1 - 0.05)/12
+        p1            = 0.70*log(2)/20,
+        p2            = log(2)/20,
+        dropoutHazard = -log(1 - 0.01)/12
       ),
       class = "tte_exp"
     ),
     structure(
       list(
-        p1            = 0.70*log(2)/15,
-        p2            = log(2)/15,
-        dropoutHazard = -log(1 - 0.05)/12
+        p1            = 0.69*log(2)/c(6.5, 14.5),
+        p2            = log(2)/c(6.5, 14.5),
+        durations     = 6.5,
+        dropoutHazard = -log(1 - 0.13)/12
       ),
-      class = "tte_exp"
+      class = "tte_pwe"
     ),
     structure(
       list(
-        p1            = 0.85,
-        p2            = 0.70,
+        p1            = 0.59,
+        p2            = 0.39,
         maturityTime  = 6
         ),
-      class = "binomial_pooled"),
-    structure(
-      list(
-        p1            = 0.45,
-        p2            = 0.10,
-        maturityTime  = 3
-        ),
-      class = "normal")
+      class = "binomial_pooled")
   ),
   # Allocation ratio; trt/control
   allocRatio    = 1,
   # Prevalence of the hypotheses
-  prevalence    = c(0.66, 1, 1, 1),
+  prevalence    = c(1, 1, 1),
   # Compute enrollment to each hypothesis using its prevalence and the
   # previously set enrollment information
   enrollment    = lapply(prevalence, function(a) {
@@ -157,28 +163,27 @@ inputD        <- tibble::tibble(
   })
 )
 
-##### 4. Define graphical testing procedure
+##### 5. Define graphical testing procedure
 graphProc     <- function(s, hypNames = NULL) {
   # s - split parameter
   m             <- matrix(0, numHyp, numHyp)
-  m[1, 2]       <-  1
+  m[1, 2]       <- s
+  m[1, 3]       <- 1 - s
+  m[2, 1]       <- s
   m[2, 3]       <- 1 - s
-  m[2, 4]       <- s
-  m[3, 4]       <- 1
-  m[4, 3]       <- 1
+  m[3, 2]       <- 1
   if (!is.null(hypNames)) {
     colnames(m) <- rownames(m) <- hypNames
   }
-  new("graphMCP", m = m, weights = inputD$w)
+  new("graphMCP", m = m, weights = hypotheses$w)
 }
 G             <- graphProc(mtParam,
-                           hypNames = paste(inputD$id, inputD$tag, sep = ": "))
+                           hypNames = paste(hypotheses$id, hypotheses$tag, sep = ": "))
 
 ##### 5. Depict the graphical testing procedure (refer to ?gMCPLite::hGraph)
 graphFigure   <- gMCPLite::hGraph(
   nHypotheses     = numHyp,
-  nameHypotheses  = paste(inputD$id, inputD$tag, sep = ": "),
-  legend.name     = "Color scheme",
+  nameHypotheses  = paste(hypotheses$id, hypotheses$tag, sep = ": "),
   #labels          = c("Regimen1", "Regimen2"),
   #legend.position = c(.5, 0.2),
   #fill            = rep(1:2, each = numHyp/2),
@@ -192,8 +197,8 @@ graphFigure   <- gMCPLite::hGraph(
   boxtextsize     = 3.5,
   trdigits        = 3,
   # relative position of plots on MT graph
-  x               = c(1, 3, 2, 4),
-  y               = c(0, 0, -1, -1),
+  x               = c(1, 3, 2),
+  y               = c(0, 0, -1),
   alphaHypotheses = gMCPLite::getWeights(G),
   m               = gMCPLite::getMatrix(G),
   wchar           = "w"
@@ -203,8 +208,8 @@ graphFigure   <- gMCPLite::hGraph(
 ```
 
 ```{r processInput, include=TRUE, echo=FALSE, message=FALSE}
-checkInput(inputD, G)    # check the inputs TODO
-main_objects <- exec_calc(inputD)
+checkInput(hypotheses, G)    # check the inputs TODO
+main_objects <- exec_calc(hypotheses)
 D            <- main_objects$D
 ia_details   <- main_objects$ia_details
 hyp_testing  <- main_objects$hyp_testing_dataset

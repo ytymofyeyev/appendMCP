@@ -1,6 +1,9 @@
 ---
 title: "Course materials"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette:
+    toc: TRUE
+    toc_depth: 3
 vignette: >
   %\VignetteIndexEntry{Course materials}
   %\VignetteEngine{knitr::rmarkdown}
@@ -25,22 +28,23 @@ Use numerical solvers, e.g., `stats::nlminb()`.
 
 **Exercise:**
 
--   Explore how the optimal parameter changes for a 3-stage design with IA analyses at 0.25 and 0.75 information fractions.
+-   Explore how the optimal parameter changes for a 3-stage design with
+respect to different alpha, beta and timing of analysis. 
 
--   Compare the expected number of subjects (`N`) to that of an equally spaced 3-stage design.
+-   Find an optimal WT boundary for OS using KEYNOTE-598 study setting
 
 ```{r}
 library(gsDesign)
 
 opt_fun <- function(
     x,                 # optimization parameter
-    timing = c(0.5,1), # timing of IAs
-    delta  = 1,        # target effect size 
+    timing,            # timing of IAs
+    delta ,            # target effect size 
     theta,             # effect size vector for which to get expected value N
     thetawgt,          # corresponing weight
-    k = 2,             # number of analysis
-    alpha = 0.025,     # Type I 
-    beta  = 0.1,
+    k = length(timing),# number of analysis
+    alpha,             # Type I 
+    beta,              # Type II
     sfu = "WT"
 ) {
   # Derive design
@@ -64,7 +68,10 @@ opt_fun <- function(
 }
 
 
-effect_size_H1 <- -log(0.60)/2  # standardized effect size under H1
+effect_size_H1 <- -log(0.70)/2  # standardized effect size under H1
+beta_target  <- 0.20
+alpha_target <- 0.025
+IA_timing    <- (1:3)/3
 
 # Call optimizer 
 x <- nlminb(
@@ -72,9 +79,9 @@ x <- nlminb(
   opt_fun,            # function to optimize
                       # other fixed parameters
   k = 3,
-  timing   = c(1, 2, 3)/3,
-  alpha    = 0.025,
-  beta     = 0.2,
+  timing   = IA_timing,
+  alpha    = alpha_target,
+  beta     = beta_target,
   delta    = effect_size_H1,  # effect size under alternative
   theta    = effect_size_H1,  # to compute EN under H1
   thetawgt = 1,
@@ -84,16 +91,51 @@ x$par
 
 # optimization function value at optimal 
 x$objective
-
-# check the resulting GSD
+```
+ 
+Design details:
+ 
+```{r}
 gsDesign(
   k = 3,
   test.type = 1,
   delta = effect_size_H1,
-  alpha = 0.025,
-  beta  = 0.2,
-  timing = c(1,2,3)/3,
+  alpha = alpha_target,
+  beta  = beta_target,
+  timing = IA_timing,
   sfu = "WT",
-  sfupar = x$par,
+  sfupar = x$par
 )
 ```
+
+Compare with WT(0.389)
+
+```{r}
+gsDesign(
+  k = 3,
+  test.type = 1,
+  delta = effect_size_H1,
+  alpha = alpha_target,
+  beta  = beta_target,
+  timing = IA_timing,
+  sfu = "WT",
+  sfupar = 0.389
+)
+```
+
+
+Compare with a Lan-DeMets O'Brien-Fleming
+spending function
+
+```{r}
+gsDesign(
+  k = 3,
+  test.type = 1,
+  delta = effect_size_H1,
+  alpha = alpha_target,
+  beta  = beta_target,
+  timing = IA_timing,
+  sfu = sfLDOF
+)
+```
+

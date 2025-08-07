@@ -39,6 +39,7 @@ Imports:
     utils,
     vistime
 Suggests: 
+    bookdown,
     rmarkdown
 VignetteBuilder: knitr
 URL: https://ytymofyeyev.github.io/appendMCP/
