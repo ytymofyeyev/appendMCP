@@ -43,8 +43,8 @@ derive_Ns <- function(D, enrollment, doRounding = TRUE) {
   for (i in 1:nrow(D)) {
     # if D$infoFr and D$hypN are given explicitly use them
     # to set Ns otherwise derive using D$iaTime and D$endpointParam
-    if (!is.null(D$infoFr[[i]])      & !is.null(D$hypN[[i]]))
-      if (!any(is.na(D$infoFr[[i]])) & !is.na(D$hypN[[i]])) {
+    if (!is.null(D$infoFr[[i]]) && !is.null(D$hypN[[i]]))
+      if (!any(is.na(D$infoFr[[i]])) && !is.na(D$hypN[[i]])) {
         Ns[[i]] <- D$infoFr[[i]] * D$hypN[[i]]
         next
       }
@@ -260,7 +260,7 @@ getStandardizingCoef.binomial <- function(x, ratio = 1){
 #' @export
 getStandardizingCoef.binomial_pooled <- function(x, ratio = 1){
   if(!is.array(x$pPooled)) pPooled <- x$pPooled
-  if (!is.null(x$p1) & !is.null(x$p2)) pPooled <- 1/(1+ratio)*(x$p1+ratio*x$p2)
+  if (!is.null(x$p1) && !is.null(x$p2)) pPooled <- 1/(1+ratio)*(x$p1+ratio*x$p2)
   sqrt(ratio)/(1+ratio) / sqrt( pPooled *(1-pPooled))
 }
 
@@ -638,6 +638,8 @@ print_sfInfo <- function(x, digits = 4)
                         paste(lapply(x$sfupar, function(y) {
                           if (is.numeric(y))
                             round(y, digits)
+                          else
+                            y
                         }), collapse = " "))
     } else
       sfParam <- ""
@@ -802,7 +804,7 @@ report_MT_grSeq <- function(
       paste(round(x, digits = pdigits), collapse = "<br>"))
   res$scenarioInfo <- dplyr::filter(scenarioInfo, .data$possibleWeight > 0)
   # run power evaluation if given effect size and sample size
-  if (!is.null(D$theta) & !is.null(D$hypN)) {
+  if (!is.null(D$theta) && !is.null(D$hypN)) {
     # extract nominal p-values
     aux <- tibble::tibble(
       hypNames = paramData$hypNames,
@@ -1181,6 +1183,11 @@ timeline_gtable <- function(D, startDate = "2022-10-12", lpi = NULL) {
   K_j                    <- sapply(D$infoFr, length)
   # Set maximum number of analyses
   K                      <- max(K_j)
+  # Ensure times has at least K entries to prevent index out of bounds
+  if (length(times) < K) {
+    # Pad with the last time value to ensure we have K entries
+    times <- c(times, rep(times[length(times)], K - length(times)))
+  }
   # Set colours for each stage to use in final plot
   if (K == 2) {
     colours              <- c("#9ECAE1FF", "#3182BDFF")
